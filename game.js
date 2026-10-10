@@ -3,18 +3,21 @@
 //   1. rising        -> where: high up, in the sky
 //   2. the cold layer -> why: the water vapour cools
 //   3. the change     -> what: from water vapour (gas) to liquid water, forming a cloud
+// Two kinds of reward: coins buy things Qattoura wears (the cloud shop), and stars are earned by how the pupil plays.
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { STARS, MAX_BANK, loadState, saveState, resetState, earnedStars } from './save.js';
+import { GOODS, applyWorn, setOpacity as setWardrobeOpacity, renderThumbs } from './wardrobe.js';
 
 const $ = (id) => document.getElementById(id);
 const ar = (n) => String(n).replace(/\d/g, (d) => '٠١٢٣٤٥٦٧٨٩'[d]);
 
 const POINTS = { arrow: 5, cold: 10, drop: 10, heat: -5, gateFirst: 30, gateSecond: 15 };
-const STAR_2 = 200, STAR_3 = 280;          // out of a possible 310
+const MAX_RUN = 310;                       // 8 arrows, 8 cold crystals, 10 drops and three gates at the first try
 
 const STATIONS = [
   {
-    good: 'arrow', bad: 'lowcloud', need: 8, every: 0.78, badChance: 0.28, sky: 0x8fd3ff,
+    good: 'arrow', bad: 'lowcloud', need: 8, every: 0.78, badChance: 0.28,
     mission: (n, need) => `اجمع أسهم الصعود: ${ar(n)} / ${ar(need)}`,
     hello: 'أنا بخار ماء! ساعدني لأصعد إلى الأعلى',
     gate: { title: 'بوابة المحطة الأولى', q: 'أين يحدث التكثف؟', right: 'في الأعلى، في السماء', wrong: 'عند سطح البحر',
@@ -24,7 +27,7 @@ const STATIONS = [
     badge: { icon: '🚀', name: 'بطاقة الصعود الذهبية' }
   },
   {
-    good: 'cold', bad: 'heat', need: 8, every: 0.72, badChance: 0.3, sky: 0x79b6ef,
+    good: 'cold', bad: 'heat', need: 8, every: 0.72, badChance: 0.3,
     mission: (n, need) => `برّد بخار الماء: ${ar(n)} / ${ar(need)}`,
     hello: 'الهواء هنا بارد! اجمع بلورات البرودة وابتعد عن الحرارة',
     gate: { title: 'بوابة المحطة الثانية', q: 'يتكثف بخار الماء عندما…', right: 'يبرد', wrong: 'يسخن',
@@ -34,7 +37,7 @@ const STATIONS = [
     badge: { icon: '❄️', name: 'بطاقة البرودة الذهبية' }
   },
   {
-    good: 'drop', bad: null, need: 10, every: 0.6, badChance: 0, sky: 0xb7d5f5,
+    good: 'drop', bad: null, need: 10, every: 0.6, badChance: 0,
     mission: (n, need) => `اجمع قطرات الماء: ${ar(n)} / ${ar(need)}`,
     hello: 'بردتُ فتحوّلتُ إلى قطرة ماء سائلة! هذا هو التكثف',
     gate: { title: 'بوابة المحطة الثالثة', q: 'في التكثف يتحول الماء…', right: 'من غاز إلى سائل', wrong: 'من سائل إلى غاز',
@@ -45,20 +48,27 @@ const STATIONS = [
   }
 ];
 
+// what the pupil keeps between runs: coin bank, things bought and worn, stars
+let state = loadState(GOODS);
+
 // ---------------------------------------------------------------- scene
+// The canvas is see-through: the sky is a CSS gradient behind it that changes with the station.
 const canvas = $('view');
-const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
 renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+renderer.setClearColor(0x000000, 0);
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(STATIONS[0].sky);
 const camera = new THREE.PerspectiveCamera(55, 1, 0.1, 100);
 const CAM_Y = 1.2, CAM_Z = 9.5;
+const SHOP_Y = -2.62, SHOP_Z = 5.9;           // close-up that keeps Qattoura in the upper part of the screen
 camera.position.set(0, CAM_Y, CAM_Z);
-camera.lookAt(0, CAM_Y, 0);
 scene.add(new THREE.HemisphereLight(0xffffff, 0x9fc8f0, 1.5));
 const sun = new THREE.DirectionalLight(0xfff2d0, 1.6);
 sun.position.set(-4, 8, 6);
 scene.add(sun);
+const rim = new THREE.DirectionalLight(0xbfe4ff, 0.7);
+rim.position.set(5, 2, -6);
+scene.add(rim);
 
 let halfW = 3, halfH = 5, bound = 2;
 function resize() {
@@ -76,6 +86,53 @@ resize();
 // ---------------------------------------------------------------- things in the sky
 const std = (color, emissive, intensity = 0.4, extra = {}) =>
   new THREE.MeshStandardMaterial({ color, emissive, emissiveIntensity: intensity, roughness: 0.4, ...extra });
+
+function softDot(size, stops) {
+  const c = document.createElement('canvas');
+  c.width = c.height = size;
+  const ctx = c.getContext('2d');
+  const g = ctx.createRadialGradient(size / 2, size / 2, 0, size / 2, size / 2, size / 2);
+  stops.forEach(([at, alpha]) => g.addColorStop(at, `rgba(255,255,255,${alpha})`));
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, size, size);
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace;
+  return t;
+}
+// a small white picture drawn on a canvas, used as a particle
+function drawn(size, paint) {
+  const c = document.createElement('canvas');
+  c.width = c.height = size;
+  const ctx = c.getContext('2d');
+  ctx.translate(size / 2, size / 2);
+  ctx.strokeStyle = ctx.fillStyle = '#fff';
+  paint(ctx, size / 2);
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace;
+  return t;
+}
+const TEX = {
+  glow: softDot(128, [[0, 0.9], [0.35, 0.4], [1, 0]]),
+  mote: softDot(48, [[0, 1], [0.5, 0.7], [1, 0]]),
+  crystal: drawn(64, (ctx, r) => {           // a snow crystal: six arms, each with two side twigs
+    ctx.lineWidth = 4; ctx.lineCap = 'round';
+    for (let k = 0; k < 6; k++) {
+      ctx.rotate(Math.PI / 3);
+      ctx.beginPath();
+      ctx.moveTo(0, 0); ctx.lineTo(0, -r * 0.86);
+      ctx.moveTo(0, -r * 0.5); ctx.lineTo(r * 0.22, -r * 0.7);
+      ctx.moveTo(0, -r * 0.5); ctx.lineTo(-r * 0.22, -r * 0.7);
+      ctx.stroke();
+    }
+  }),
+  droplet: drawn(64, (ctx, r) => {           // a tiny drop: pointed at the top, round at the bottom
+    ctx.beginPath();
+    ctx.moveTo(0, -r * 0.9);
+    ctx.bezierCurveTo(r * 0.75, -r * 0.05, r * 0.6, r * 0.8, 0, r * 0.8);
+    ctx.bezierCurveTo(-r * 0.6, r * 0.8, -r * 0.75, -r * 0.05, 0, -r * 0.9);
+    ctx.fill();
+  })
+};
 
 function arrowGeometry() {
   const s = new THREE.Shape();
@@ -106,12 +163,20 @@ const MAT = {
   heat: std(0xff3b1f, 0xff2200, 1.3),
   lowcloud: std(0xe8eef5, 0x9fb4c8, 0.25, { roughness: 1 }),
   drop: std(0x2aa9ff, 0x1479e0, 0.45, { roughness: 0.15 }),
-  cloud: std(0xffffff, 0xdcebff, 0.35, { roughness: 1, transparent: true, opacity: 0.5 }),
+  cloud: std(0xffffff, 0xdcebff, 0.35, { roughness: 1, transparent: true, opacity: 0.55 }),
   spark: new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true })
 };
+const halo = (color, opacity) => new THREE.SpriteMaterial({ map: TEX.glow, color, transparent: true, opacity, depthWrite: false,
+  blending: THREE.AdditiveBlending });
+const HALO = { arrow: halo(0xa8e6ff, 0.75), cold: halo(0xffffff, 0.8), heat: halo(0xff8a4a, 0.75), drop: halo(0x8fd0ff, 0.7) };
 
 function makeItem(type) {
   const g = new THREE.Group();
+  if (HALO[type]) {
+    const h = new THREE.Sprite(HALO[type]);
+    h.scale.setScalar(type === 'heat' ? 2.1 : 2.4); h.position.z = -0.3;
+    g.add(h);
+  }
   if (type === 'arrow') {
     const m = new THREE.Mesh(GEO.arrow, MAT.arrow); m.scale.setScalar(0.55); g.add(m);
   } else if (type === 'cold') {
@@ -143,6 +208,36 @@ for (let i = 0; i < 9; i++) {
   scene.add(g); backdrop.push(g);
 }
 
+// One light layer of floating specks that changes with the station:
+// vapour motes that rise, then snow crystals that drift down, then tiny drops that fall.
+// vy is the speed up the screen; sway is how far a speck swings from side to side.
+const SPECKS = 70, SPECK_SPAN = 26;
+const speckLook = [
+  { map: TEX.mote, color: 0xffffff, size: 0.18, opacity: 0.6, vy: 0.9, sway: 0.25 },
+  { map: TEX.crystal, color: 0xf2fbff, size: 0.34, opacity: 0.95, vy: -0.8, sway: 0.5 },
+  { map: TEX.droplet, color: 0x8fcfff, size: 0.26, opacity: 0.85, vy: -2.4, sway: 0 }
+];
+let speckNow = speckLook[0];
+const speckPos = new Float32Array(SPECKS * 3);
+for (let i = 0; i < SPECKS; i++) {
+  speckPos[i * 3] = (Math.random() - 0.5) * 18;
+  speckPos[i * 3 + 1] = CAM_Y + (Math.random() - 0.5) * SPECK_SPAN;
+  speckPos[i * 3 + 2] = -1 - Math.random() * 6;
+}
+const speckGeo = new THREE.BufferGeometry();
+speckGeo.setAttribute('position', new THREE.BufferAttribute(speckPos, 3));
+const speckX0 = Float32Array.from({ length: SPECKS }, (_, i) => speckPos[i * 3]);
+const speckMat = new THREE.PointsMaterial({ transparent: true, depthWrite: false });
+function setSpecks(i) {
+  speckNow = speckLook[i];
+  speckMat.map = speckNow.map; speckMat.color.set(speckNow.color); speckMat.size = speckNow.size; speckMat.opacity = speckNow.opacity;
+  speckMat.needsUpdate = true;
+}
+setSpecks(0);
+const specks = new THREE.Points(speckGeo, speckMat);
+specks.frustumCulled = false;
+scene.add(specks);
+
 // little sparks when something is collected
 const sparks = [];
 function burst(pos, color) {
@@ -156,11 +251,30 @@ function burst(pos, color) {
   }
 }
 
+// "+5" labels that float up from the place where coins were won or lost
+const floatPool = [];
+const projected = new THREE.Vector3();
+function floatLabel(pos, n) {
+  let el = floatPool.find((f) => !f.busy);
+  if (!el) {
+    if (floatPool.length >= 8) { return; }
+    el = document.createElement('div'); el.className = 'float'; $('hud').appendChild(el); floatPool.push(el);
+  }
+  projected.copy(pos).project(camera);
+  el.style.left = ((projected.x + 1) / 2) * window.innerWidth + 'px';
+  el.style.top = ((1 - projected.y) / 2) * window.innerHeight + 'px';
+  el.innerHTML = (n > 0 ? '+' : '−') + ar(Math.abs(n)) + ' <i class="coin"></i>';
+  el.classList.toggle('minus', n < 0);
+  el.classList.remove('go'); void el.offsetWidth; el.classList.add('go');
+  el.busy = true;
+  setTimeout(() => { el.busy = false; el.classList.remove('go'); }, 850);
+}
+
 // ---------------------------------------------------------------- Qattoura and her cloud
 const player = new THREE.Group();
 player.position.set(0, -1.9, 0);
 scene.add(player);
-let mixer = null, playerMeshes = [];
+let mixer = null, playerMeshes = [], model = null, thumbs = {};
 const bigCloud = new THREE.Group();
 bigCloud.position.set(0, -1.4, -1.3);
 bigCloud.scale.setScalar(0.001);
@@ -168,25 +282,34 @@ scene.add(bigCloud);
 
 function setPlayerOpacity(o) {
   playerMeshes.forEach((m) => { m.material.transparent = o < 0.999; m.material.opacity = o; m.material.depthWrite = true; });
+  setWardrobeOpacity(o);
 }
+function dress() { if (model) { applyWorn(model, state.worn); } }
 
 const loader = new GLTFLoader();
 const load = (url) => new Promise((ok, bad) => loader.load(url, ok, undefined, bad));
 Promise.all([load('models/qattoura.glb'), load('models/cloud.glb')]).then(([drop, cloud]) => {
-  drop.scene.scale.setScalar(0.62);
-  drop.scene.position.y = 0.75;
-  drop.scene.traverse((n) => { if (n.isMesh) { n.material = n.material.clone(); playerMeshes.push(n); } });
-  player.add(drop.scene);
-  mixer = new THREE.AnimationMixer(drop.scene);
+  model = drop.scene;
+  model.scale.setScalar(0.62);
+  model.position.y = 0.75;
+  model.traverse((n) => { if (n.isMesh) { n.material = n.material.clone(); playerMeshes.push(n); } });
+  player.add(model);
+  mixer = new THREE.AnimationMixer(model);
   drop.animations.forEach((c) => mixer.clipAction(c).play());
   cloud.scene.scale.setScalar(1.5);
   bigCloud.add(cloud.scene);
+  thumbs = renderThumbs();
+  dress();
   $('loading').textContent = '';
   $('startBtn').disabled = false;
+  $('miniShop').disabled = false;
 }).catch(() => { $('loading').textContent = 'تعذّر تحميل اللعبة. تأكد من الاتصال بالإنترنت ثم أعد تحميل الصفحة.'; });
 
 // ---------------------------------------------------------------- sound (made in code, no files)
 let audio = null;
+function wakeAudio() {
+  if (!audio) { try { audio = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { audio = null; } }
+}
 function beep(freq, dur = 0.12, type = 'sine', when = 0, gain = 0.16) {
   if (!audio) { return; }
   const o = audio.createOscillator(), g = audio.createGain();
@@ -202,11 +325,15 @@ const sfx = {
   bad: () => beep(170, 0.25, 'sawtooth', 0, 0.1),
   wrong: () => { beep(240, 0.14, 'square', 0, 0.09); beep(190, 0.2, 'square', 0.13, 0.09); },
   win: () => [523, 659, 784, 1047].forEach((f, i) => beep(f, 0.2, 'triangle', i * 0.11)),
-  change: () => [392, 523, 659, 784, 988, 1175].forEach((f, i) => beep(f, 0.16, 'sine', i * 0.08))
+  change: () => [392, 523, 659, 784, 988, 1175].forEach((f, i) => beep(f, 0.16, 'sine', i * 0.08)),
+  tap: () => beep(660, 0.07, 'triangle', 0, 0.1)
 };
 
 // ---------------------------------------------------------------- game state
-const S = { mode: 'start', station: 0, got: 0, score: 0, tries: 0, spawnT: 0, slowT: 0, lockT: 0, targetX: 0, time: 0, badges: [] };
+// peak: the highest progress reached in this station. Coins are paid only above it, so progress that a heat ray
+// took away cannot be collected again for more coins.
+const S = { mode: 'start', station: 0, got: 0, peak: 0, score: 0, tries: 0, spawnT: 0, slowT: 0, lockT: 0, targetX: 0, time: 0,
+            badges: [], firstTries: 0, heatHits: 0, cloudHits: 0, shopFrom: 'end' };
 const items = [];
 let bubbleTimer = 0;
 
@@ -216,11 +343,13 @@ function say(text, secs = 2.6) {
   bubbleTimer = setTimeout(() => b.classList.remove('show'), secs * 1000);
 }
 function addScore(n) {
-  S.score = Math.max(0, S.score + n);
+  S.score = Math.min(MAX_RUN, Math.max(0, S.score + n));
   $('scoreNum').textContent = ar(S.score);
   const el = $('score'); el.classList.remove('bump'); void el.offsetWidth; el.classList.add('bump');
 }
-function showPanel(id) { ['start', 'story', 'gate', 'card', 'end', 'shop'].forEach((p) => $(p).classList.toggle('show', p === id)); }
+const PANELS = ['start', 'story', 'gate', 'card', 'end', 'shop', 'boardPanel'];
+function showPanel(id) { PANELS.forEach((p) => $(p).classList.toggle('show', p === id)); }
+function setSky(n) { document.body.dataset.sky = String(n); }
 function hud() {
   const st = STATIONS[S.station];
   $('mission').textContent = st.mission(S.got, st.need);
@@ -240,8 +369,9 @@ function hud() {
 function clearItems() { items.forEach((it) => scene.remove(it)); items.length = 0; }
 
 function startStation(i) {
-  S.station = i; S.got = 0; S.tries = 0; S.spawnT = 0.6; S.slowT = 0; S.mode = 'play';
-  clearItems(); showPanel(null); hud();
+  S.station = i; S.got = 0; S.peak = 0; S.tries = 0; S.spawnT = 0.6; S.slowT = 0; S.mode = 'play';
+  clearItems(); showPanel(null); hud(); setSky(i + 1);
+  setSpecks(i);
   const st = STATIONS[i];
   if (i === 2) {
     // The change: Qattoura was cooled, so the vapour becomes a clear drop of liquid water.
@@ -270,6 +400,7 @@ function missionDone() {
 }
 
 function answer(ok, btn) {
+  if (S.mode !== 'gate') { return; }
   const st = STATIONS[S.station];
   if (!ok) {
     S.tries++; sfx.wrong();
@@ -279,6 +410,7 @@ function answer(ok, btn) {
     $('hintLine').innerHTML = '✖ ' + st.gate.why + '<br>💧 ' + st.gate.hint + ' حاول مرة أخرى.';
     return;
   }
+  if (S.tries === 0) { S.firstTries++; }
   addScore(S.tries === 0 ? POINTS.gateFirst : POINTS.gateSecond);
   S.badges.push(st.badge);
   sfx.win();
@@ -291,20 +423,55 @@ function answer(ok, btn) {
   showPanel('card');
 }
 
+// ---------------------------------------------------------------- the stars board
+// compact: smaller cells for the end screen. A star not yet earned always says how to earn it.
+function drawBoard(box, fresh = [], compact = false) {
+  box.innerHTML = '';
+  box.classList.toggle('compact', compact);
+  STARS.forEach((st) => {
+    const has = state.stars.includes(st.id);
+    const d = document.createElement('div');
+    d.className = 'star' + (has ? ' on' : '') + (fresh.includes(st.id) ? ' new' : '');
+    const icon = document.createElement('i'); icon.className = 'st';
+    const name = document.createElement('b'); name.textContent = st.name;
+    const how = document.createElement('small'); how.textContent = has ? 'حصلتَ عليها ✔' : st.how;
+    d.append(icon, name);
+    if (!compact || !has) { d.append(how); }
+    box.appendChild(d);
+  });
+}
+function starCount() { return ar(state.stars.length) + ' / ' + ar(STARS.length); }
+
+// the end of a run: bank the coins once, then give the stars that this run earned
+function finishRun() {
+  state.runs++;
+  state.bank = Math.min(MAX_BANK, state.bank + S.score);
+  const run = { finished: true, firstTries: S.firstTries, heatHits: S.heatHits, cloudHits: S.cloudHits, score: S.score };
+  const fresh = earnedStars(run, state).filter((id) => !state.stars.includes(id));
+  state.stars.push(...fresh);
+  saveState(state);
+  $('final').innerHTML = 'قطعك في هذه الرحلة: ' + ar(S.score) + ' <i class="coin"></i>';
+  $('badges').textContent = 'بطاقاتك الذهبية: ' + S.badges.map((b) => b.icon).join(' ');
+  $('endStarsTitle').textContent = fresh.length
+    ? 'ربحتَ ' + (fresh.length === 1 ? 'نجمة جديدة!' : fresh.length === 2 ? 'نجمتين جديدتين!' : ar(fresh.length) + ' نجوم جديدة!')
+    : 'لوحة النجوم: ' + starCount();
+  drawBoard($('endBoard'), fresh, true);
+  $('hud').hidden = true;
+  $('end').scrollTop = 0;
+  showPanel('end');
+}
+
 $('cardBtn').addEventListener('click', () => {
+  if (S.mode !== 'card') { return; }
   if (S.station < 2) { startStation(S.station + 1); return; }
   S.mode = 'end';
-  const stars = S.score >= STAR_3 ? 3 : S.score >= STAR_2 ? 2 : 1;
-  $('stars').textContent = '⭐'.repeat(stars) + '☆'.repeat(3 - stars);
-  $('final').innerHTML = 'قطعك النقدية: ' + ar(S.score) + ' <i class="coin"></i>';
-  $('badges').innerHTML = 'بطاقاتك الذهبية: ' + S.badges.map((b) => b.icon).join(' ');
-  $('hud').hidden = true;
-  showPanel('end');
+  finishRun();
 });
 
 function begin() {
-  S.score = 0; S.badges = []; S.targetX = 0;
-  player.position.x = 0;
+  wakeAudio();
+  S.score = 0; S.badges = []; S.targetX = 0; S.firstTries = 0; S.heatHits = 0; S.cloudHits = 0;
+  player.position.x = 0; player.rotation.y = 0;
   bigCloud.scale.setScalar(0.001);
   setPlayerOpacity(0.38);
   $('scoreNum').textContent = ar(0);
@@ -312,67 +479,117 @@ function begin() {
   startStation(0);
 }
 function intro() {
-  if (!audio) { try { audio = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { audio = null; } }
+  wakeAudio();
   $('hud').hidden = true;
   showPanel('story');
 }
 $('startBtn').addEventListener('click', intro);
 $('goBtn').addEventListener('click', begin);
-$('againBtn').addEventListener('click', begin);
+// From the end screen the pupil replays at once. From the start screen the game still opens with the AR recap.
+$('againBtn').addEventListener('click', () => (S.shopFrom === 'start' ? intro() : begin()));
 
 // ---------------------------------------------------------------- the cloud shop
-// Prizes are stickers on Qattoura's souvenir picture. x and y are percentages of the picture.
-const GOODS = [
-  { id: 'balloons', icon: '🎈', name: 'بالونات', price: 30, at: [[86, 30, 2.4]] },
-  { id: 'glasses', icon: '🕶️', name: 'نظارة شمسية', price: 40, at: [[50, 52, 2.5]] },
-  { id: 'stars', icon: '✨', name: 'نجوم لامعة', price: 60, at: [[16, 18, 2.2], [78, 78, 1.8], [24, 80, 1.6]] },
-  { id: 'crown', icon: '👑', name: 'تاج', price: 80, at: [[51, 2, 2.4]] },
-  { id: 'rainbow', icon: '🌈', name: 'قوس قزح', price: 100, at: [[50, -16, 4.4]] },
-  { id: 'cup', icon: '🏆', name: 'كأس صانع الغيوم', price: 150, at: [[12, 62, 2.8]] }
-];
-let wallet = 0;
-const owned = new Set();
-
+// Coins buy things that Qattoura wears. She keeps them on in the next run.
 function drawShop() {
-  $('walletNum').textContent = ar(wallet);
+  $('walletNum').textContent = ar(state.bank);
   const box = $('goods'); box.innerHTML = '';
-  let shelf = null;
-  GOODS.forEach((gd, i) => {
-    if (i % 2 === 0) { shelf = document.createElement('div'); shelf.className = 'shelf'; box.appendChild(shelf); }
+  GOODS.forEach((gd) => {
+    const has = state.owned.includes(gd.id), on = state.worn.includes(gd.id);
     const b = document.createElement('button');
-    const has = owned.has(gd.id);
     b.type = 'button';
-    b.className = 'good' + (has ? ' own' : wallet < gd.price ? ' poor' : '');
-    b.innerHTML = '<span class="ic">' + gd.icon + '</span><span class="nm">' + gd.name + '</span><span class="pr">' +
-      (has ? 'اشتريتها ✔' : ar(gd.price) + ' <i class="coin"></i>') + '</span>';
-    b.addEventListener('click', () => buy(gd));
-    shelf.appendChild(b);
+    b.className = 'good' + (on ? ' on' : has ? ' own' : state.bank < gd.price ? ' poor' : '');
+    const pic = thumbs[gd.id] ? document.createElement('img') : document.createElement('span');
+    pic.className = 'ic';
+    if (thumbs[gd.id]) { pic.src = thumbs[gd.id]; pic.alt = ''; } else { pic.style.background = gd.tint; }
+    const name = document.createElement('span'); name.className = 'nm'; name.textContent = gd.name;
+    const tag = document.createElement('span'); tag.className = 'pr';
+    if (on) { tag.textContent = 'تلبسها ✔'; } else if (has) { tag.textContent = 'البسها'; } else { tag.innerHTML = ar(gd.price) + ' <i class="coin"></i>'; }
+    b.append(pic, name, tag);
+    b.addEventListener('click', () => pick(gd));
+    box.appendChild(b);
   });
 }
-function buy(gd) {
-  if (owned.has(gd.id)) { $('shopMsg').textContent = 'هذه الجائزة عندك.'; return; }
-  if (wallet < gd.price) {
+function wear(gd) {
+  // one thing per place: a crown takes the hat off, a scarf takes the bow off
+  state.worn = state.worn.filter((id) => GOODS.find((g) => g.id === id).slot !== gd.slot);
+  state.worn.push(gd.id);
+}
+function pick(gd) {
+  if (S.mode !== 'shop') { return; }
+  const msg = $('shopMsg');
+  if (state.owned.includes(gd.id)) {
+    if (state.worn.includes(gd.id)) {
+      state.worn = state.worn.filter((id) => id !== gd.id);
+      msg.textContent = 'خلعت قطّورة ' + gd.name + '.';
+    } else {
+      wear(gd);
+      msg.textContent = 'لبست قطّورة ' + gd.name + '!';
+    }
+    sfx.tap();
+  } else if (state.bank < gd.price) {
     sfx.wrong();
-    $('shopMsg').textContent = 'ينقصك ' + ar(gd.price - wallet) + ' قطعة نقدية. العب مرة أخرى لتجمع أكثر!';
+    msg.textContent = 'ينقصك ' + ar(gd.price - state.bank) + ' قطعة نقدية. العب مرة أخرى لتجمع أكثر!';
+    return;
+  } else {
+    state.bank -= gd.price; state.owned.push(gd.id); wear(gd); sfx.win();
+    msg.textContent = 'اشتريتَ ' + gd.name + '! 🎉';
+  }
+  saveState(state);
+  dress();
+  drawShop();
+}
+function shopTab(which) {
+  const goods = which === 'goods';
+  $('tabGoods').classList.toggle('on', goods);
+  $('tabStars').classList.toggle('on', !goods);
+  $('goods').hidden = !goods;
+  $('shopStars').hidden = goods;
+  $('shopMsg').textContent = goods ? 'اختر ما تلبسه قطّورة بقطعك النقدية' : 'النجوم لا تُشترى. تربحها بلعبك الجيد: ' + starCount();
+  if (!goods) { drawBoard($('shopStars')); }
+  $('sheet').scrollTop = 0;
+}
+function openShop(from) {
+  if (!model) { return; }
+  S.shopFrom = from;
+  $('shopBack').hidden = from !== 'start';
+  wakeAudio();
+  S.mode = 'shop'; S.targetX = 0;
+  clearItems();
+  $('hud').hidden = true;
+  setSky(3);
+  $('againBtn').textContent = from === 'end' ? '🔄 العب مرة أخرى لتجمع قطعاً أكثر' : '▶ العب لتجمع القطع النقدية';
+  drawShop();
+  shopTab('goods');
+  showPanel('shop');
+}
+$('shopBtn').addEventListener('click', () => openShop('end'));
+$('miniShop').addEventListener('click', () => openShop('start'));
+$('shopBack').addEventListener('click', () => { S.mode = 'start'; showPanel('start'); });
+$('tabGoods').addEventListener('click', () => shopTab('goods'));
+$('tabStars').addEventListener('click', () => shopTab('stars'));
+
+// the stars board on its own, opened from the start screen
+$('miniStars').addEventListener('click', () => {
+  $('boardTitle').textContent = 'لوحة النجوم: ' + starCount();
+  drawBoard($('mainBoard'));
+  showPanel('boardPanel');
+});
+$('boardBack').addEventListener('click', () => showPanel('start'));
+
+// "new player": class tablets are shared, so the saved coins, things and stars can be cleared with two taps
+let resetArmed = 0;
+$('miniReset').addEventListener('click', () => {
+  const b = $('miniReset');
+  if (!resetArmed) {
+    b.textContent = 'اضغط ثانيةً للتأكيد'; b.classList.add('warn');
+    resetArmed = setTimeout(() => { resetArmed = 0; b.textContent = '👤 لاعب جديد'; b.classList.remove('warn'); }, 3000);
     return;
   }
-  wallet -= gd.price; owned.add(gd.id); sfx.win();
-  gd.at.forEach(([x, y, size]) => {
-    const s = document.createElement('span');
-    s.textContent = gd.icon; s.style.left = x + '%'; s.style.top = y + '%'; s.style.fontSize = size + 'rem';
-    $('photo').appendChild(s);
-    requestAnimationFrame(() => s.classList.add('on'));
-    setTimeout(() => s.classList.add('on'), 60);
-  });
-  $('shopMsg').textContent = 'اشتريتَ ' + gd.name + '! 🎉';
-  drawShop();
-}
-$('shopBtn').addEventListener('click', () => {
-  wallet = S.score; owned.clear();
-  $('photo').querySelectorAll('span').forEach((s) => s.remove());
-  $('shopMsg').textContent = 'اختر جوائزك بقطعك النقدية';
-  drawShop();
-  showPanel('shop');
+  clearTimeout(resetArmed); resetArmed = 0;
+  state = resetState();
+  dress();
+  b.textContent = 'تم. أهلاً باللاعب الجديد!'; b.classList.remove('warn');
+  setTimeout(() => { b.textContent = '👤 لاعب جديد'; }, 2000);
 });
 
 // ---------------------------------------------------------------- controls
@@ -383,6 +600,7 @@ function steer(clientX) {
 canvas.addEventListener('pointerdown', (e) => { steer(e.clientX); $('swipe').style.display = 'none'; });
 canvas.addEventListener('pointermove', (e) => { if (e.pointerType === 'mouse' || e.buttons || e.pressure > 0) { steer(e.clientX); } });
 window.addEventListener('keydown', (e) => {
+  if (S.mode !== 'play') { return; }
   if (e.key === 'ArrowLeft') { S.targetX = Math.max(-bound, S.targetX - 0.7); }
   if (e.key === 'ArrowRight') { S.targetX = Math.min(bound, S.targetX + 0.7); }
 });
@@ -401,12 +619,16 @@ function spawn() {
 function collect(it) {
   const type = it.userData.type, st = STATIONS[S.station];
   if (type === 'lowcloud') {
-    S.slowT = 1.4; sfx.bad(); say('الغيوم المنخفضة تؤخّرنا!', 1.6);
+    S.cloudHits++; S.slowT = 1.4; sfx.bad(); say('الغيوم المنخفضة تؤخّرنا!', 1.6);
   } else if (type === 'heat') {
-    S.got = Math.max(0, S.got - 1); addScore(POINTS.heat); sfx.bad(); burst(it.position, 0xff5a36);
+    S.heatHits++;
+    S.got = Math.max(0, S.got - 1);
+    if (S.score > 0) { floatLabel(it.position, POINTS.heat); }
+    addScore(POINTS.heat); sfx.bad(); burst(it.position, 0xff5a36);
     say('الحرارة تُبعدني عن التكثف!', 1.8);
   } else {
-    S.got++; addScore(POINTS[type]); sfx.good();
+    S.got++; sfx.good();
+    if (S.got > S.peak) { S.peak = S.got; addScore(POINTS[type]); floatLabel(it.position, POINTS[type]); }
     burst(it.position, type === 'arrow' ? 0x8fdcff : type === 'cold' ? 0xffffff : 0x2aa9ff);
     if (type === 'cold' && S.got === 4) { say('أشعر بالبرودة!', 1.6); }
     if (type === 'drop' && S.got === 3) { say('القطرات تتجمع، والغيمة تكبر!', 1.8); }
@@ -419,13 +641,17 @@ function collect(it) {
 function update(dt) {
   S.time += dt;
   if (mixer) { mixer.update(dt); }
+  const shop = S.mode === 'shop';
 
-  // the sky gets paler and colder as she climbs
-  scene.background.lerp(new THREE.Color(STATIONS[S.station].sky), Math.min(1, dt * 1.5));
+  // the camera comes close in the shop, and goes back for the climb
+  const ease = Math.min(1, dt * 5);
+  camera.position.y += ((shop ? SHOP_Y : CAM_Y) - camera.position.y) * ease;
+  camera.position.z += ((shop ? SHOP_Z : CAM_Z) - camera.position.z) * ease;
 
-  // Qattoura follows the finger
+  // Qattoura follows the finger; in the shop she turns from side to side to show what she wears
   player.position.x += (S.targetX - player.position.x) * Math.min(1, dt * 9);
   player.rotation.z = (player.position.x - S.targetX) * 0.12;
+  player.rotation.y += ((shop ? Math.sin(S.time * 0.9) * 0.75 : 0) - player.rotation.y) * Math.min(1, dt * 6);
 
   // how visible she is: faint vapour, clearer as she cools, a solid drop after the change
   let op = 0.38;
@@ -436,11 +662,11 @@ function update(dt) {
     const pulse = 1 + 0.25 * Math.sin(S.changeT * Math.PI);
     player.scale.setScalar(pulse);
   } else { player.scale.setScalar(1); }
-  if (S.mode === 'end' || S.mode === 'card' && S.station === 2) { op = 1; }
+  if (shop || S.mode === 'end' || S.mode === 'card' && S.station === 2) { op = 1; player.scale.setScalar(1); }
   setPlayerOpacity(op);
 
-  // the cloud she builds in the last station
-  const cloudTarget = S.station === 2 ? 0.2 + 1.15 * (S.got / STATIONS[2].need) : 0.001;
+  // the cloud she builds in the last station; in the shop it stays behind her like a backdrop
+  const cloudTarget = shop ? 1 : S.station === 2 ? 0.2 + 1.15 * (S.got / STATIONS[2].need) : 0.001;
   const cs = bigCloud.scale.x + (cloudTarget - bigCloud.scale.x) * Math.min(1, dt * 3);
   bigCloud.scale.setScalar(cs);
   bigCloud.position.x += (player.position.x - bigCloud.position.x) * Math.min(1, dt * 4);
@@ -453,11 +679,20 @@ function update(dt) {
     if (c.position.y < CAM_Y - halfH - 9) { c.position.y = CAM_Y + halfH + 9; c.position.x = (Math.random() - 0.5) * 26; }
   });
 
+  const lift = dt * speckNow.vy;
+  for (let i = 0; i < SPECKS; i++) {
+    speckPos[i * 3 + 1] += lift;
+    if (speckPos[i * 3 + 1] < CAM_Y - SPECK_SPAN / 2) { speckPos[i * 3 + 1] += SPECK_SPAN; }
+    if (speckPos[i * 3 + 1] > CAM_Y + SPECK_SPAN / 2) { speckPos[i * 3 + 1] -= SPECK_SPAN; }
+    speckPos[i * 3] = speckX0[i] + Math.sin(S.time * 1.3 + i) * speckNow.sway;
+  }
+  speckGeo.attributes.position.needsUpdate = true;
+
   for (let i = sparks.length - 1; i >= 0; i--) {
     const m = sparks[i], d = m.userData;
     m.position.x += d.vx * dt; m.position.y += d.vy * dt; d.life -= dt;
     m.material.opacity = Math.max(0, d.life * 2);
-    if (d.life <= 0) { scene.remove(m); sparks.splice(i, 1); }
+    if (d.life <= 0) { scene.remove(m); m.material.dispose(); sparks.splice(i, 1); }
   }
 
   if (S.mode !== 'play') { return; }
@@ -494,4 +729,9 @@ function frame(now) {
 window.requestAnimationFrame(frame);
 
 // small handle for testing from the console
-window.__game = { S, STATIONS, items, collectOne: () => { const it = makeItem(STATIONS[S.station].good); it.position.copy(player.position); collect(it); } };
+window.__game = {
+  S, STATIONS, items, player,
+  get state() { return state; },
+  step: (dt = 1 / 30, n = 1) => { for (let i = 0; i < n; i++) { update(dt); } renderer.render(scene, camera); },
+  collectOne: (type) => { const it = makeItem(type || STATIONS[S.station].good); it.position.copy(player.position); collect(it); }
+};

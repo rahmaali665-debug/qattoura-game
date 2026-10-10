@@ -5,6 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
   <title>قطّورة تصعد إلى الغيمة</title>
   <meta name="description" content="لعبة ثلاثية الأبعاد عن التكثف في دورة الماء، للصف الثالث الابتدائي">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+Bhaijaan+2:wght@500;600;700;800&display=swap" rel="stylesheet">
   <script type="importmap">
     { "imports": {
         "three": "https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.module.js",
@@ -12,39 +15,64 @@
     } }
   </script>
   <style>
-    :root { --blue: #1f7fc4; --deep: #0b4f88; --orange: #ff8a1f; --gold: #ffcc33; }
+    /* one palette, one set of corners and shadows for every screen */
+    :root {
+      --sky-top: #6cc6ff; --sky-bottom: #1b74bd;
+      --ink: #0b3d6b; --ink-soft: #2f6aa3;
+      --orange: #ff8a1f; --orange-light: #ffa94a; --orange-deep: #c9620a;
+      --gold: #ffc928; --gold-light: #fff3bf; --gold-deep: #c98a00;
+      --mint: #2fae66; --mint-deep: #1f8a4d; --violet: #8a5cdb; --amber: #f2a100; --red: #e8344e;
+      --cream: #fff7e3; --wood: #8a5a2b; --wood-deep: #5f3c18; --paper: #ffffff; --ice: #e9f5ff; --ice-line: #9fd0f5;
+      --r-xl: 28px; --r-lg: 22px; --r-md: 16px; --r-pill: 999px;
+      --lift: 0 6px 0 rgba(11, 61, 107, .2); --lift-sm: 0 4px 0 rgba(11, 61, 107, .16);
+      --font: "Baloo Bhaijaan 2", Tahoma, "Segoe UI", Arial, sans-serif;
+    }
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-    html, body { margin: 0; height: 100%; overflow: hidden; background: #8fd3ff;
-      font-family: Tahoma, "Segoe UI", Arial, sans-serif; user-select: none; }
-    canvas#view { position: fixed; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; }
+    html, body { margin: 0; height: 100%; overflow: hidden; background: var(--sky-top);
+      font-family: var(--font); font-weight: 600; user-select: none; -webkit-user-select: none; }
+    button { font: inherit; }
+
+    /* the sky behind the 3D view: warm low down, colder higher up, pale near the cloud */
+    .sky { position: fixed; inset: 0; z-index: 0; opacity: 0; transition: opacity 1.4s ease; }
+    #sky1 { background: radial-gradient(circle at 12% 96%, rgba(255, 236, 150, .85), transparent 42%), linear-gradient(#4fb6ff, #a9e2ff 70%, #dff5ff); }
+    #sky2 { background: linear-gradient(#2f76cf, #6fb0ee 60%, #b6dcf8); }
+    #sky3 { background: radial-gradient(circle at 80% 8%, rgba(255, 255, 255, .7), transparent 38%), linear-gradient(#7fa9e2, #c4dcf5 60%, #eef5fc); }
+    body[data-sky="1"] #sky1, body[data-sky="2"] #sky2, body[data-sky="3"] #sky3 { opacity: 1; }
+    canvas#view { position: fixed; inset: 0; z-index: 1; width: 100%; height: 100%; display: block; touch-action: none; }
 
     /* a gold coin drawn in CSS, so it looks the same on every device */
-    .coin { display: inline-block; width: 1.05em; height: 1.05em; border-radius: 50%; vertical-align: -0.16em;
-      background: radial-gradient(circle at 35% 30%, #fff6b0, #ffc928 55%, #e59a00); border: 0.09em solid #c47f00; }
+    .coin { display: inline-block; width: 1.05em; height: 1.05em; border-radius: 50%; vertical-align: -0.18em;
+      background: radial-gradient(circle at 35% 30%, #fff6b0, var(--gold) 55%, #e59a00); border: 0.09em solid var(--gold-deep);
+      box-shadow: inset 0 0 0 0.12em rgba(255, 255, 255, .35); }
 
     /* ---------- heads-up display ---------- */
     #hud { position: fixed; inset: 0; pointer-events: none; z-index: 5; }
-    .pill { background: rgba(255,255,255,.95); color: var(--deep); font-weight: bold; border-radius: 999px;
-      padding: 8px 18px; box-shadow: 0 3px 0 rgba(0,0,0,.14); }
-    #score { position: absolute; top: 12px; inset-inline-start: 12px; font-size: 1.45rem; }
+    .pill { background: rgba(255, 255, 255, .96); color: var(--ink); font-weight: 700; border-radius: var(--r-pill);
+      padding: 6px 18px; box-shadow: var(--lift-sm); }
+    #score { position: absolute; top: 12px; inset-inline-start: 12px; font-size: 1.5rem; border: 3px solid var(--gold); }
     #score.bump { animation: bump .25s; }
     @keyframes bump { 50% { transform: scale(1.25); } }
     #steps { position: absolute; top: 12px; inset-inline-end: 12px; display: flex; gap: 7px; align-items: center; }
-    #steps i { width: 38px; height: 38px; border-radius: 50%; background: rgba(255,255,255,.6); color: var(--deep);
-      display: grid; place-items: center; font-style: normal; font-weight: bold; font-size: 1.2rem; }
+    #steps i { width: 40px; height: 40px; border-radius: 50%; background: rgba(255, 255, 255, .65); color: var(--ink);
+      display: grid; place-items: center; font-style: normal; font-weight: 800; font-size: 1.25rem; }
     #steps i.on { background: var(--gold); box-shadow: 0 0 0 3px #fff; }
-    #steps i.done { background: #3fbf6a; color: #fff; }
-    #mission { position: absolute; top: 66px; left: 50%; transform: translateX(-50%); font-size: 1.3rem; width: max-content; max-width: 94vw; text-align: center; }
-    #thermo { position: absolute; top: 130px; inset-inline-end: 14px; width: 36px; height: 200px; background: rgba(255,255,255,.92);
-      border-radius: 18px; padding: 5px; box-shadow: 0 3px 0 rgba(0,0,0,.12); display: none; }
+    #steps i.done { background: var(--mint); color: #fff; }
+    #mission { position: absolute; top: 68px; left: 50%; transform: translateX(-50%); font-size: 1.3rem; width: max-content; max-width: 94vw; text-align: center; }
+    #thermo { position: absolute; top: 132px; inset-inline-end: 14px; width: 36px; height: 200px; background: rgba(255, 255, 255, .94);
+      border-radius: 18px; padding: 5px; box-shadow: var(--lift-sm); display: none; }
     #thermo b { position: absolute; left: 5px; right: 5px; bottom: 5px; border-radius: 14px; height: 100%;
       background: linear-gradient(#ff5a36, #ffb13d); transition: height .3s, background .3s; }
     #thermo span { position: absolute; top: -30px; left: 50%; transform: translateX(-50%); font-size: 1.4rem; }
-    #bubble { position: absolute; bottom: 25%; left: 50%; transform: translateX(-50%); background: #fff; color: var(--deep);
-      font-weight: bold; font-size: 1.3rem; line-height: 1.6; padding: 10px 20px; border-radius: 20px;
-      box-shadow: 0 4px 0 rgba(0,0,0,.14); opacity: 0; transition: opacity .25s; width: max-content; max-width: 88vw; text-align: center; }
+    #bubble { position: absolute; bottom: 25%; left: 50%; transform: translateX(-50%); background: #fff; color: var(--ink);
+      font-weight: 700; font-size: 1.3rem; line-height: 1.6; padding: 10px 20px; border-radius: var(--r-lg);
+      box-shadow: var(--lift); opacity: 0; transition: opacity .25s; width: max-content; max-width: 88vw; text-align: center; }
     #bubble.show { opacity: 1; }
     #swipe { position: absolute; bottom: 14px; left: 50%; transform: translateX(-50%); font-size: 1.1rem; white-space: nowrap; }
+    .float { position: absolute; transform: translate(-50%, -50%); font-weight: 800; font-size: 1.6rem; color: #fff; opacity: 0;
+      text-shadow: 0 2px 0 var(--gold-deep), 0 0 8px rgba(0, 0, 0, .25); white-space: nowrap; direction: ltr; }
+    .float.minus { color: #ffd9d2; text-shadow: 0 2px 0 #a8200d, 0 0 8px rgba(0, 0, 0, .25); }
+    .float.go { animation: rise .85s ease-out; }
+    @keyframes rise { 0% { opacity: 0; margin-top: 0; } 15% { opacity: 1; } 100% { opacity: 0; margin-top: -90px; } }
 
     /* ---------- full-screen panels ---------- */
     .panel { position: fixed; inset: 0; z-index: 20; display: none; flex-direction: column; align-items: center;
@@ -53,108 +81,167 @@
     .panel > * { flex-shrink: 0; }
     .panel > :first-child { margin-top: auto; }      /* centred when it fits, scrolls from the top when it does not */
     .panel > :last-child { margin-bottom: auto; }
-    #start, #story, #end, #shop { background: linear-gradient(#8fd3ff, var(--blue)); }
+    #start, #story, #end, #boardPanel {
+      background:
+        radial-gradient(ellipse 60% 16% at 10% 12%, rgba(255, 255, 255, .5), transparent 70%),
+        radial-gradient(ellipse 50% 13% at 92% 30%, rgba(255, 255, 255, .34), transparent 70%),
+        radial-gradient(ellipse 70% 18% at 30% 96%, rgba(255, 255, 255, .28), transparent 70%),
+        linear-gradient(var(--sky-top), var(--sky-bottom)); }
 
     /* the main button of every screen flashes to show the pupil where to press */
-    .btn { font: inherit; font-size: 1.6rem; font-weight: bold; color: #fff; background: var(--orange); border: 4px solid #fff;
-      border-radius: 999px; padding: 15px 30px; margin-top: 16px; cursor: pointer; line-height: 1.4;
-      animation: flash 1.1s ease-in-out infinite; }
+    .btn { font-size: 1.6rem; font-weight: 800; color: #fff; background: linear-gradient(var(--orange-light), var(--orange));
+      border: 4px solid #fff; border-radius: var(--r-pill); padding: 12px 30px; margin-top: 16px; cursor: pointer; line-height: 1.4;
+      min-height: 56px; text-shadow: 0 2px 0 rgba(160, 70, 0, .45); animation: flash 1.1s ease-in-out infinite; }
     @keyframes flash {
-      0%, 100% { transform: scale(1); background: var(--orange); box-shadow: 0 6px 0 #c9620a, 0 0 0 0 rgba(255,255,255,.95); }
-      50% { transform: scale(1.07); background: #ffa53d; box-shadow: 0 6px 0 #c9620a, 0 0 0 16px rgba(255,255,255,0); }
+      0%, 100% { transform: scale(1); box-shadow: 0 6px 0 var(--orange-deep), 0 0 0 0 rgba(255, 255, 255, .95); filter: brightness(1); }
+      50% { transform: scale(1.07); box-shadow: 0 6px 0 var(--orange-deep), 0 0 0 16px rgba(255, 255, 255, 0); filter: brightness(1.12); }
     }
     .btn:disabled { animation: none; opacity: .6; }
+    .btn:active { transform: translateY(3px); }
+    /* small quiet buttons for side doors: stars board, shop, new player */
+    .mini { font-size: 1.05rem; font-weight: 700; color: var(--ink); background: rgba(255, 255, 255, .92); border: 3px solid #fff;
+      border-radius: var(--r-pill); padding: 4px 12px; min-height: 48px; cursor: pointer; box-shadow: var(--lift-sm); line-height: 1.3; }
+    .mini:disabled { opacity: .55; }
+    .mini.warn { background: #ffe3e0; color: #a8200d; border-color: #ff8a80; }
 
     /* ---------- start screen ---------- */
-    #start { padding: 1.2vh 14px 1.6vh; }
-    #start .logo { height: min(19vh, 230px); max-width: 98vw; object-fit: contain; animation: bob 2.4s ease-in-out infinite; }
-    @keyframes bob { 50% { transform: translateY(-10px); } }
-    #start h1 { margin: 0; line-height: 1.35; text-shadow: 0 4px 0 rgba(0,0,0,.18); }
-    #start h1 { line-height: 1.25; }
+    #start { padding: 1vh 14px 1.2vh; }
+    #start .logo { height: min(20vh, 230px); max-width: 98vw; object-fit: contain; animation: bob 2.4s ease-in-out infinite;
+      filter: drop-shadow(0 8px 0 rgba(11, 61, 107, .16)); }
+    @keyframes bob { 50% { transform: translateY(-8px); } }
+    #start h1 { margin: 0; line-height: 1.12; font-weight: 800; text-shadow: 0 4px 0 rgba(11, 61, 107, .28); }
     #start h1 .who { display: block; font-size: min(4.4vh, 2.8rem); }
-    #start h1 .what { display: block; font-size: min(5.6vh, 3.4rem, 11vw); color: #fff7c2; white-space: nowrap; }
-    #start .lead { margin: 0.6vh 0 0; font-size: min(2.5vh, 1.5rem); font-weight: bold; line-height: 1.6; max-width: 30rem; }
-    .how { display: grid; gap: 1vh; width: min(94vw, 460px); margin-top: 1.2vh; }
-    .how span { border-radius: 18px; padding: 0.9vh 10px; font-weight: bold; font-size: min(2.7vh, 1.6rem, 5.5vw); white-space: nowrap; color: #fff;
-      border: 3px solid #fff; box-shadow: 0 4px 0 rgba(0,0,0,.14); }
-    .how .c1 { background: #2fae66; }
-    .how .c2 { background: #f2a100; }
-    .how .c3 { background: #8a5cdb; }
-    .promise { background: #fff; color: #b35a00; font-weight: bold; border-radius: 20px; padding: 1.2vh 14px; margin: 1.3vh 0 0;
-      font-size: min(2.6vh, 1.55rem); line-height: 1.55; width: min(94vw, 460px); border: 4px dashed #ffb13d; }
-    #start .btn { font-size: min(3.1vh, 1.9rem, 6vw); padding: 1.4vh 18px; margin-top: 1.5vh; white-space: nowrap; }
-    #loading { font-size: 1rem; margin-top: 0.6vh; min-height: 1.2em; }
+    #start h1 .what { display: block; font-size: min(5.8vh, 3.5rem, 11.5vw); color: var(--gold-light); white-space: nowrap; }
+    #start .lead { margin: 0.3vh 0 0; font-size: min(2.4vh, 1.45rem); font-weight: 700; line-height: 1.45; max-width: 30rem; }
+    .how { display: grid; gap: 0.9vh; width: min(94vw, 460px); margin-top: 1vh; }
+    .how span { border-radius: var(--r-md); padding: 0.55vh 10px; font-weight: 700; font-size: min(2.6vh, 1.55rem, 5.4vw); white-space: nowrap;
+      color: #fff; border: 3px solid #fff; box-shadow: var(--lift-sm); line-height: 1.45; }
+    .how .c1 { background: linear-gradient(#46c57e, var(--mint)); }
+    .how .c2 { background: linear-gradient(#ffb62e, var(--amber)); }
+    .how .c3 { background: linear-gradient(#a47ae8, var(--violet)); }
+    .promise { background: var(--paper); color: #a04f00; font-weight: 700; border-radius: var(--r-lg); padding: 0.7vh 12px; margin: 1.1vh 0 0;
+      font-size: min(2.35vh, 1.45rem); line-height: 1.45; width: min(94vw, 460px); border: 4px dashed #ffb13d; }
+    #start .btn { font-size: min(3.1vh, 1.9rem, 6vw); padding: 0.9vh 18px; margin-top: 1.5vh; white-space: nowrap; min-height: 0; }
+    .minirow { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-top: 1.5vh; width: min(96vw, 470px); }
+    .minirow .mini { font-size: min(2.2vh, 1.05rem, 4.2vw); padding: 2px 10px; }
+    #loading { font-size: .95rem; min-height: 1.1em; line-height: 1.1; }
 
     /* ---------- link to the AR activity ---------- */
-    #story img { width: min(94vw, 460px); border-radius: 20px; border: 6px solid #fff; box-shadow: 0 7px 0 rgba(0,0,0,.16); }
-    .recap { background: #fff; color: var(--deep); border-radius: 24px; padding: 16px 18px; width: min(94vw, 460px);
-      margin-top: 14px; text-align: start; box-shadow: 0 7px 0 rgba(0,0,0,.14); }
-    .recap p { margin: 6px 0; font-size: 1.4rem; line-height: 1.9; }
-    .recap b { color: #c9620a; }
-    .recap .ask { font-weight: bold; font-size: 1.65rem; text-align: center; color: var(--blue); margin-top: 10px; }
+    #story img { width: min(94vw, 460px); border-radius: var(--r-lg); border: 6px solid #fff; box-shadow: var(--lift); }
+    .recap { background: var(--paper); color: var(--ink); border-radius: var(--r-xl); padding: 14px 18px; width: min(94vw, 460px);
+      margin-top: 14px; text-align: start; box-shadow: var(--lift); }
+    .recap p { margin: 6px 0; font-size: 1.4rem; line-height: 1.75; }
+    .recap b { color: var(--orange-deep); }
+    .recap .ask { font-weight: 800; font-size: 1.65rem; text-align: center; color: var(--ink-soft); margin-top: 8px; }
 
     /* ---------- gate challenge and golden card ---------- */
-    #gate, #card { background: rgba(8, 44, 84, .66); }
-    .box { background: #fff; color: var(--deep); border-radius: 26px; padding: 20px 18px 22px; width: min(94vw, 450px);
-      box-shadow: 0 8px 0 rgba(0,0,0,.18); }
-    .box h2 { margin: 0 0 6px; font-size: 1.3rem; color: #c9620a; }
-    .box .q { font-size: 1.7rem; font-weight: bold; line-height: 1.6; margin: 6px 0 14px; }
+    #gate, #card { background: rgba(8, 44, 84, .62); backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px); }
+    .box { background: var(--paper); color: var(--ink); border-radius: var(--r-xl); padding: 18px 18px 22px; width: min(94vw, 450px);
+      box-shadow: 0 8px 0 rgba(0, 0, 0, .2); border: 5px solid var(--ice-line); }
+    .box h2 { margin: 0 0 4px; font-size: 1.3rem; color: var(--orange-deep); }
+    .box .q { font-size: 1.75rem; font-weight: 800; line-height: 1.45; margin: 4px 0 14px; }
     .opts { display: grid; gap: 12px; }
-    .opt { font: inherit; font-size: 1.6rem; font-weight: bold; color: var(--deep); background: #e9f5ff; border: 4px solid #9fd0f5;
-      border-radius: 18px; padding: 14px; cursor: pointer; }
+    .opt { font-size: 1.6rem; font-weight: 700; color: var(--ink); background: var(--ice); border: 4px solid var(--ice-line);
+      border-radius: var(--r-md); padding: 10px 14px; min-height: 64px; cursor: pointer; box-shadow: var(--lift-sm); }
     .opt.wrong { animation: shake .35s; background: #ffe3e0; border-color: #ff8a80; }
     @keyframes shake { 25% { transform: translateX(8px); } 75% { transform: translateX(-8px); } }
-    #hintLine { min-height: 1.6em; margin-top: 12px; font-weight: bold; color: #c9620a; }
-    #hintLine.fb { background: #fff1e6; border: 3px solid #ffb07a; border-radius: 16px; padding: 10px 12px;
-      font-size: 1.2rem; line-height: 1.8; color: #9a3d00; }
-    .gold { background: linear-gradient(#fff3bf, #ffd65a); color: #5a3d00; border: 5px solid #fff; }
+    #hintLine { min-height: 1.6em; margin-top: 12px; font-weight: 700; color: var(--orange-deep); }
+    #hintLine.fb { background: #fff1e6; border: 3px solid #ffb07a; border-radius: var(--r-md); padding: 8px 12px;
+      font-size: 1.2rem; line-height: 1.65; color: #9a3d00; }
+    .gold { background: linear-gradient(var(--gold-light), #ffd65a); color: #5a3d00; border: 5px solid #fff; }
     .gold .badge { font-size: 4rem; line-height: 1.1; animation: pop .6s; }
     @keyframes pop { 0% { transform: scale(0) rotate(-30deg); } 70% { transform: scale(1.25); } }
-    .gold h2 { color: #7a4b00; font-size: 1.45rem; margin: 6px 0 2px; line-height: 1.6; }
-    .gold .label { font-size: 1.25rem; margin-top: 8px; }
-    .gold .phrase { font-size: 1.9rem; font-weight: bold; line-height: 1.6; }
+    .gold h2 { color: #7a4b00; font-size: 1.45rem; margin: 6px 0 2px; line-height: 1.5; }
+    .gold .label { font-size: 1.25rem; margin-top: 6px; }
+    .gold .phrase { font-size: 1.9rem; font-weight: 800; line-height: 1.45; }
 
     /* ---------- final result ---------- */
-    #end h1 { margin: 0 0 8px; font-size: 2.2rem; line-height: 1.4; }
-    .board { background: #fff; color: var(--deep); border-radius: 24px; padding: 14px 18px; width: min(94vw, 460px);
-      text-align: start; box-shadow: 0 8px 0 rgba(0,0,0,.15); }
-    .board h2 { margin: 0 0 6px; text-align: center; font-size: 1.9rem; color: var(--blue); }
-    .board p { margin: 6px 0; font-size: 1.4rem; line-height: 1.7; border-bottom: 3px dashed #d7ebfa; padding-bottom: 6px; }
+    #end h1 { margin: 0 0 4px; font-size: 2.1rem; line-height: 1.3; font-weight: 800; text-shadow: 0 4px 0 rgba(11, 61, 107, .28); }
+    .board { background: var(--paper); color: var(--ink); border-radius: var(--r-xl); padding: 12px 18px; width: min(94vw, 460px);
+      text-align: start; box-shadow: var(--lift); }
+    .board h2 { margin: 0 0 4px; text-align: center; font-size: 1.9rem; color: var(--ink-soft); font-weight: 800; }
+    .board p { margin: 3px 0; font-size: 1.32rem; line-height: 1.5; border-bottom: 3px dashed #d7ebfa; padding-bottom: 4px; }
     .board p:last-child { border-bottom: 0; }
-    .board b { color: #c9620a; }
-    #stars { font-size: 3rem; letter-spacing: 6px; margin-top: 10px; text-shadow: 0 3px 0 rgba(0,0,0,.15); }
-    #final { font-size: 1.6rem; font-weight: bold; margin: 2px 0; }
-    #badges { font-size: 1.35rem; font-weight: bold; margin-top: 2px; line-height: 1.8; }
+    .board b { color: var(--orange-deep); }
+    #final { font-size: 1.45rem; font-weight: 800; margin: 6px 0 0; line-height: 1.4; }
+    #badges { font-size: 1.35rem; font-weight: 700; line-height: 1.6; }
 
-    /* ---------- the cloud shop, drawn as a little shop front ---------- */
-    .store { width: min(96vw, 470px); background: #fff7e3; border: 6px solid #8a5a2b; border-radius: 18px 18px 22px 22px;
-      box-shadow: 0 8px 0 rgba(0,0,0,.2); overflow: hidden; color: #5a3a15; }
-    .awning { height: 46px; background: repeating-linear-gradient(90deg, #ff5a4d 0 38px, #fff 38px 76px);
-      border-bottom: 6px solid #c93f35; border-radius: 0 0 26px 26px / 0 0 18px 18px; }
-    .sign { margin: 10px auto 4px; width: max-content; max-width: 92%; background: #8a5a2b; color: #fff7c2; font-weight: bold;
-      font-size: 2.1rem; padding: 4px 26px; border-radius: 14px; border: 4px solid #5f3c18; }
-    #wallet { margin: 8px auto 0; width: max-content; background: #fff; color: var(--deep); font-weight: bold; font-size: 1.7rem;
-      border-radius: 999px; padding: 6px 22px; border: 4px solid var(--gold); }
-    .photo { position: relative; width: min(74vw, 330px); margin: 50px auto 2px; }
-    .photo img { width: 100%; display: block; }
-    .photo span { position: absolute; transform: translate(-50%, -50%) scale(0); transition: transform .35s cubic-bezier(.3,1.6,.5,1); line-height: 1; }
-    .photo span.on { transform: translate(-50%, -50%) scale(1); }
-    #shopMsg { min-height: 1.7em; font-weight: bold; font-size: 1.3rem; color: #b35a00; margin: 2px 8px 4px; line-height: 1.6; }
-    .shelf { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 8px 10px 12px; margin: 0 8px 12px;
-      border-bottom: 12px solid #a9713a; border-radius: 0 0 8px 8px; box-shadow: 0 5px 0 #6f4520; }
-    .good { font: inherit; background: #fff; color: var(--deep); border: 4px solid #cfe7fa; border-radius: 18px; padding: 8px 4px 10px;
-      cursor: pointer; font-weight: bold; position: relative; }
-    .good .ic { font-size: 3.2rem; display: block; line-height: 1.15; }
-    .good .nm { font-size: 1.25rem; display: block; line-height: 1.5; }
-    .good .pr { display: inline-block; margin-top: 4px; font-size: 1.35rem; background: #ffd65a; color: #6b3d00; border-radius: 10px;
-      padding: 2px 12px; border: 3px solid #e0a400; transform: rotate(-3deg); }
-    .good.own { background: #e4f8ea; border-color: #63c888; }
-    .good.own .pr { background: #63c888; border-color: #2f9a58; color: #fff; transform: none; }
-    .good.poor { opacity: .5; }
+    /* ---------- the stars board: stars are earned, never bought ---------- */
+    .boardwrap { background: linear-gradient(#17467c, #0d315c); border: 4px solid var(--gold); border-radius: var(--r-xl);
+      padding: 8px 10px 10px; width: min(94vw, 460px); margin-top: 8px; box-shadow: var(--lift); color: #fff; }
+    .boardwrap h2 { margin: 0 0 6px; font-size: 1.4rem; font-weight: 800; color: var(--gold-light); line-height: 1.4; }
+    .starsboard { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .star { background: rgba(255, 255, 255, .09); border: 2px solid rgba(255, 255, 255, .22); border-radius: var(--r-md);
+      padding: 8px 6px; display: flex; flex-direction: column; align-items: center; gap: 2px; }
+    /* a star not yet earned is a grey outline; an earned star is filled with gold */
+    .star .st, .star .st::after { clip-path: polygon(50% 0, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%); }
+    .star .st { position: relative; width: 52px; height: 52px; background: #9fb3cc; }
+    .star .st::after { content: ""; position: absolute; inset: 6px; background: #143d6e; }
+    .star.on .st::after { display: none; }
+    .star b { font-size: 1.12rem; line-height: 1.35; color: #c7d6e8; font-weight: 700; }
+    .star small { font-size: .98rem; line-height: 1.4; color: #b3c6dc; font-weight: 600; }
+    .star.on { background: rgba(255, 201, 40, .16); border-color: var(--gold); }
+    .star.on .st { background: linear-gradient(#fff6b0, var(--gold) 55%, #ff9d1f); filter: drop-shadow(0 0 6px rgba(255, 220, 90, .9)); }
+    .star.on b { color: #fff; }
+    .star.on small { color: var(--gold-light); }
+    .starsboard.compact { grid-template-columns: 1fr 1fr 1fr; gap: 6px; }
+    .starsboard.compact .star { padding: 6px 2px; }
+    .starsboard.compact .st { width: 42px; height: 42px; }
+    .starsboard.compact b { font-size: 1rem; line-height: 1.25; }
+    .starsboard.compact small { font-size: .9rem; line-height: 1.3; }
+    .star.new .st { animation: newstar 1.1s ease-out 2; }
+    @keyframes newstar { 0% { transform: scale(0) rotate(-90deg); } 60% { transform: scale(1.45) rotate(10deg); } 100% { transform: scale(1); } }
+
+    /* ---------- the cloud shop: Qattoura stands on top, the counter slides up from below ---------- */
+    #shop { padding: 0; overflow: hidden; background: none; color: var(--wood-deep); }
+    #shop > :first-child { margin-top: 0; }
+    #shop > :last-child { margin-bottom: 0; }
+    .shophead { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 10px 12px 0; }
+    .sign { background: var(--wood); color: var(--gold-light); font-weight: 800; font-size: min(1.9rem, 7vw); padding: 0 18px;
+      border-radius: var(--r-md); border: 4px solid var(--wood-deep); box-shadow: var(--lift-sm); line-height: 1.6; white-space: nowrap; }
+    #wallet { background: var(--paper); color: var(--ink); font-weight: 800; font-size: min(1.7rem, 6.4vw); border-radius: var(--r-pill);
+      padding: 0 16px; border: 4px solid var(--gold); box-shadow: var(--lift-sm); line-height: 1.7; white-space: nowrap; }
+    .stage { flex: 0 0 33vh; width: 100%; pointer-events: none; }
+    #sheet::-webkit-scrollbar { display: none; }
+    #sheet { scrollbar-width: none; flex: 1 1 0; min-height: 0; width: 100%; max-width: 560px; overflow-y: auto; touch-action: pan-y; background: var(--cream);
+      border: 6px solid var(--wood); border-bottom: 0; border-radius: var(--r-xl) var(--r-xl) 0 0; box-shadow: 0 -6px 0 rgba(11, 61, 107, .16);
+      display: flex; flex-direction: column; align-items: center; padding-bottom: 18px; }
+    #sheet > * { flex-shrink: 0; }
+    .awning { width: 100%; height: 30px; background: repeating-linear-gradient(90deg, #ff5a4d 0 36px, #fff 36px 72px);
+      border-bottom: 5px solid #c93f35; border-radius: 18px 18px 22px 22px / 18px 18px 14px 14px; }
+    .tabs { display: flex; gap: 8px; width: 100%; padding: 10px 10px 0; }
+    .tab { flex: 1; font-size: min(1.25rem, 4.9vw); font-weight: 800; color: var(--wood-deep); background: #f1dfb8; border: 3px solid #d9bd85;
+      border-radius: var(--r-md); min-height: 52px; padding: 2px 4px; cursor: pointer; line-height: 1.3; }
+    .tab.on { background: var(--wood); color: var(--gold-light); border-color: var(--wood-deep); box-shadow: var(--lift-sm); }
+    #shopMsg { min-height: 1.7em; font-weight: 700; font-size: 1.25rem; color: #a04f00; margin: 6px 10px 4px; line-height: 1.5; }
+    .goods { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; padding: 4px 10px 6px; }
+    .goods[hidden], #shopStars[hidden] { display: none; }
+    .good { background: var(--paper); color: var(--ink); border: 4px solid #cfe7fa; border-radius: var(--r-lg); padding: 6px 4px 10px;
+      cursor: pointer; font-weight: 700; box-shadow: var(--lift-sm); display: flex; flex-direction: column; align-items: center; min-height: 48px; }
+    .good .ic { width: 92px; height: 92px; display: block; object-fit: contain; border-radius: 50%;
+      background: radial-gradient(circle, #eaf6ff 55%, transparent 72%); }
+    .good span.ic { width: 60px; height: 60px; margin: 16px; border: 4px solid #fff; box-shadow: 0 0 0 3px #cfe7fa; }
+    .good .nm { font-size: 1.3rem; display: block; line-height: 1.4; }
+    .good .pr { display: inline-block; margin-top: 4px; font-size: 1.3rem; font-weight: 800; background: #ffd65a; color: #6b3d00; border-radius: 10px;
+      padding: 0 12px; border: 3px solid #e0a400; transform: rotate(-3deg); line-height: 1.5; }
+    .good.own { border-color: var(--ice-line); }
+    .good.own .pr { background: var(--ice); border-color: var(--ice-line); color: var(--ink); transform: none; }
+    .good.on { background: #e4f8ea; border-color: #63c888; }
+    .good.on .pr { background: #63c888; border-color: var(--mint-deep); color: #fff; transform: none; }
+    .good.poor { opacity: .55; }
+    #shopStars { width: 100%; padding: 4px 10px 6px; }
+    #shopStars .star { background: #17467c; border-color: #0d315c; }
+    #shopStars .star.on { background: #1d4f8a; border-color: var(--gold); }
+    #shop .btn { font-size: min(1.45rem, 5.6vw); padding: 8px 20px; margin-top: 12px; }
+    #shopBack { margin-top: 12px; padding: 4px 22px; }
+    #shopBack[hidden] { display: none; }
   </style>
 </head>
-<body>
+<body data-sky="1">
 
+<div id="sky1" class="sky"></div>
+<div id="sky2" class="sky"></div>
+<div id="sky3" class="sky"></div>
 <canvas id="view"></canvas>
 
 <div id="hud" hidden>
@@ -176,8 +263,13 @@
     <span class="c2"><i class="coin"></i> اجمع القطع النقدية</span>
     <span class="c3">⭐ اجمع ٣ بطاقات ذهبية</span>
   </div>
-  <p class="promise">🎁 كلما جمعتَ قطعاً نقدية أكثر، اشتريتَ جوائز أكثر من متجر الغيمة</p>
+  <p class="promise">🎁 بالقطع النقدية تشتري ملابس لقطّورة، وبلعبك الجيد تربح نجوماً في لوحة النجوم</p>
   <button id="startBtn" class="btn" type="button" disabled>▶ ابدأ المغامرة مع قطّورة</button>
+  <div class="minirow">
+    <button id="miniStars" class="mini" type="button">⭐ لوحة النجوم</button>
+    <button id="miniShop" class="mini" type="button" disabled>🛍️ المتجر</button>
+    <button id="miniReset" class="mini" type="button">👤 لاعب جديد</button>
+  </div>
   <div id="loading">جاري تحميل اللعبة…</div>
 </div>
 
@@ -222,23 +314,43 @@
     <p><b>التحول:</b> من بخار ماء (غاز) إلى ماء سائل</p>
     <p><b>النتيجة:</b> تتشكل الغيوم</p>
   </div>
-  <div id="stars"></div>
   <div id="final"></div>
   <div id="badges"></div>
-  <button id="shopBtn" class="btn" type="button">🎁 ادخل متجر الغيمة</button>
+  <div class="boardwrap">
+    <h2 id="endStarsTitle"></h2>
+    <div id="endBoard" class="starsboard"></div>
+  </div>
+  <button id="shopBtn" class="btn" type="button">🛍️ ادخل متجر الغيمة</button>
 </div>
 
-<!-- The cloud shop: spend the coins on prizes for Qattoura's souvenir picture -->
-<div id="shop" class="panel">
-  <div class="store">
-    <div class="awning"></div>
-    <div class="sign">متجر الغيمة</div>
-    <div id="wallet">رصيدك: <span id="walletNum">٠</span> <i class="coin"></i></div>
-    <div class="photo" id="photo"><img src="cover.png" alt="صورة قطّورة التذكارية"></div>
-    <div id="shopMsg"></div>
-    <div id="goods"></div>
+<!-- The stars board on its own -->
+<div id="boardPanel" class="panel">
+  <div class="boardwrap">
+    <h2 id="boardTitle"></h2>
+    <div id="mainBoard" class="starsboard"></div>
   </div>
-  <button id="againBtn" class="btn" type="button">🔄 العب مرة أخرى لتجمع قطعاً أكثر</button>
+  <button id="boardBack" class="btn" type="button">رجوع</button>
+</div>
+
+<!-- The cloud shop: coins buy things that Qattoura wears -->
+<div id="shop" class="panel">
+  <div class="shophead">
+    <div class="sign">متجر الغيمة</div>
+    <div id="wallet"><span id="walletNum">٠</span> <i class="coin"></i></div>
+  </div>
+  <div class="stage"></div>
+  <div id="sheet">
+    <div class="awning"></div>
+    <div class="tabs">
+      <button id="tabGoods" class="tab on" type="button">👕 ملابس قطّورة</button>
+      <button id="tabStars" class="tab" type="button">⭐ لوحة النجوم</button>
+    </div>
+    <div id="shopMsg"></div>
+    <div id="goods" class="goods"></div>
+    <div id="shopStars" class="starsboard" hidden></div>
+    <button id="againBtn" class="btn" type="button">🔄 العب مرة أخرى لتجمع قطعاً أكثر</button>
+    <button id="shopBack" class="mini" type="button" hidden>رجوع إلى البداية</button>
+  </div>
 </div>
 
 <script type="module" src="game.js"></script>
