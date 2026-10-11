@@ -536,6 +536,7 @@ function pick(gd) {
   }
   saveState(state);
   dress();
+  renderer.render(scene, camera);     // the new piece shows on her at once
   drawShop();
 }
 function shopTab(which) {
@@ -561,6 +562,12 @@ function openShop(from) {
   drawShop();
   shopTab('goods');
   showPanel('shop');
+  // show Qattoura in her shop pose at once, without waiting for the camera to glide there
+  camera.position.y = SHOP_Y; camera.position.z = SHOP_Z;
+  player.position.x = 0; player.scale.setScalar(1); setPlayerOpacity(1);
+  bigCloud.scale.setScalar(1); bigCloud.position.x = 0;
+  dress();
+  renderer.render(scene, camera);
 }
 $('shopBtn').addEventListener('click', () => openShop('end'));
 $('miniShop').addEventListener('click', () => openShop('start'));
@@ -719,14 +726,20 @@ function update(dt) {
 }
 
 let last = performance.now();
-function frame(now) {
+function tick(now) {
   const dt = Math.min(0.05, (now - last) / 1000);
   last = now;
   update(dt);
   renderer.render(scene, camera);
+}
+function frame(now) {
+  tick(now);
   window.requestAnimationFrame(frame);
 }
 window.requestAnimationFrame(frame);
+// Some embedded browsers pause requestAnimationFrame while the page counts as hidden.
+// A timer keeps the scene moving then, so Qattoura still shows in the shop.
+window.setInterval(() => { const now = performance.now(); if (now - last > 250) { tick(now); } }, 60);
 
 // small handle for testing from the console
 window.__game = {
