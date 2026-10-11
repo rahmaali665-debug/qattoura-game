@@ -106,7 +106,7 @@
 
     /* ---------- start screen ---------- */
     #start { padding: 1vh 14px 1.2vh; }
-    #start .logo { height: min(20vh, 230px); max-width: 98vw; object-fit: contain; animation: bob 2.4s ease-in-out infinite;
+    #start .logo { height: min(20vh, 230px); max-width: 98vw; object-fit: contain; margin-bottom: 0.8vh; animation: bob 2.4s ease-in-out infinite;
       filter: drop-shadow(0 8px 0 rgba(11, 61, 107, .16)); }
     @keyframes bob { 50% { transform: translateY(-8px); } }
     #start h1 { margin: 0; line-height: 1.12; font-weight: 800; text-shadow: 0 4px 0 rgba(11, 61, 107, .28); }
@@ -125,6 +125,21 @@
     .minirow { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-top: 1.5vh; width: min(96vw, 470px); }
     .minirow .mini { font-size: min(2.2vh, 1.05rem, 4.2vw); padding: 2px 10px; }
     #loading { font-size: .95rem; min-height: 1.1em; line-height: 1.1; }
+    #start .startui { display: flex; flex-direction: column; align-items: center; width: 100%; margin-block: auto; }
+    #start .hero, #start .hello, #start .friends { display: none; }
+    /* wide screens: big Qattoura in her cloud on the left, the words on the right, her friends below them */
+    @media (min-width: 900px) and (min-aspect-ratio: 5/4) {
+      #start { align-items: flex-start; padding-inline-start: 3.5vw; }
+      #start .startui { width: min(46vw, 600px); margin-block: 1.5vh auto; position: relative; z-index: 2; }
+      #start .logo { display: none; }
+      #start .hero { display: block; position: absolute; left: 0; bottom: 0; height: 97vh; max-width: 52vw; object-fit: contain;
+        object-position: left bottom; z-index: 1; pointer-events: none; }
+      #start .hello { display: block; position: absolute; left: 11vw; top: 3.5vh; z-index: 2; background: var(--paper); color: var(--ink);
+        font-weight: 800; font-size: min(3.4vh, 1.7rem); line-height: 1.3; padding: 1.1vh 26px; border-radius: var(--r-xl); box-shadow: var(--lift); }
+      #start .hello::after { content: ""; position: absolute; left: 70px; bottom: -13px; border: 9px solid transparent;
+        border-top: 14px solid var(--paper); border-bottom: 0; }
+      #start .friends { display: block; height: min(27vh, 250px); margin-top: 0.5vh; pointer-events: none; }
+    }
 
     /* ---------- link to the AR activity ---------- */
     #story img { width: min(94vw, 460px); border-radius: var(--r-lg); border: 6px solid #fff; box-shadow: var(--lift); }
@@ -255,7 +270,10 @@
 
 <!-- Start screen -->
 <div id="start" class="panel show">
-  <img class="logo" src="cover.png" alt="قطّورة أمام غيمة">
+  <img class="hero" src="start-hero.webp" alt="">
+  <div class="hello">هيّا نصعد إلى الغيمة!</div>
+  <div class="startui">
+  <img class="logo" src="start-logo.webp" alt="قطّورة فرحة فوق غيمة">
   <h1><span class="who">قطّورة</span><span class="what">تصعد إلى الغيمة</span></h1>
   <p class="lead">ساعد قطّورة لتصعد إلى السماء، وتبرد، وتتحول إلى قطرة ماء.</p>
   <div class="how">
@@ -270,7 +288,9 @@
     <button id="miniShop" class="mini" type="button" disabled>🛍️ المتجر</button>
     <button id="miniReset" class="mini" type="button">👤 لاعب جديد</button>
   </div>
+  <img class="friends" src="start-friends.webp" alt="صديقات قطّورة فوق غيمة">
   <div id="loading">جاري تحميل اللعبة…</div>
+  </div>
 </div>
 
 <!-- Link to the previous activity (the AR card) -->
