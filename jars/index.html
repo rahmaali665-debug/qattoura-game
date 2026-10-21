@@ -7,8 +7,9 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+Bhaijaan+2:wght@500;700;800&display=swap">
 <style>
 /* One smart-board screen. Card table on the right, قطّورة lifting the evaporation and condensation jars,
-   both pouring into the water-cycle jar at her feet. The pupils sort eight cards by the objective's
-   four criteria: place, direction, cause and change of state. */
+   both pouring into the similarity jar at her feet. The pupils sort eleven cards by the objective's
+   four criteria (place, direction, cause, change of state): eight differences and three similarities.
+   Direction has no similarity card: condensation happens after the vapour has risen and cooled. */
 :root {
   color-scheme: light;
   --sky-top: #3D9BE6;
@@ -95,14 +96,14 @@ h1 {
 /* ---- stage ---- */
 .stage {
   display: grid; grid-template-columns: minmax(0, 1fr) minmax(110px, 0.75fr) minmax(0, 1fr);
-  grid-template-areas: "evap q cond" ". cycle ."; gap: 6px 10px; align-items: start; min-width: 0;
+  grid-template-areas: "evap q cond" ". same ."; gap: 6px 10px; align-items: start; min-width: 0;
 }
 .q { grid-area: q; align-self: end; justify-self: center; width: 100%; max-width: 230px; height: auto; margin-top: 40px; }
 .jar { position: relative; padding-top: 26px; min-width: 0; }
-.jar[data-zone="evap"], .jar[data-zone="cond"] { cursor: pointer; }
+.jar[data-zone="evap"], .jar[data-zone="cond"], .jar[data-zone="same"] { cursor: pointer; }
 .jar[data-zone="evap"] { grid-area: evap; }
 .jar[data-zone="cond"] { grid-area: cond; }
-.jar[data-zone="cycle"] { grid-area: cycle; margin-top: -20px; }
+.jar[data-zone="same"] { grid-area: same; margin-top: -20px; }
 .jar-label {
   position: absolute; top: 0; inset-inline: 0; margin-inline: auto; width: max-content; max-width: 100%; z-index: 2;
   color: var(--white); border: 3px solid var(--white); border-radius: 16px; padding: 0 18px; text-align: center; line-height: 1.15;
@@ -111,7 +112,7 @@ h1 {
 .jar-label span { font-weight: 500; font-size: clamp(0.8rem, 1.2vw, 1.05rem); }
 .jar[data-zone="evap"] .jar-label { background: var(--evap); }
 .jar[data-zone="cond"] .jar-label { background: var(--cond); }
-.jar[data-zone="cycle"] .jar-label { background: var(--cycle); }
+.jar[data-zone="same"] .jar-label { background: var(--ok); }
 .glass {
   border: 4px solid rgba(255, 255, 255, 0.85); border-radius: 50% / 22px; padding: 40px 10px 22px;
   display: flex; flex-direction: column; gap: 7px; min-height: 270px;
@@ -119,8 +120,7 @@ h1 {
 }
 .jar[data-zone="evap"] .glass { background: linear-gradient(#CFE6F7 0%, #EAF3F8 45%, #7FB4C9 55%, #D9C7A0 100%); }
 .jar[data-zone="cond"] .glass { background: radial-gradient(ellipse at 60% 45%, #FFFFFF 0 22%, transparent 40%), linear-gradient(#7C9BD0, #C6D6EE); }
-.jar[data-zone="cycle"] .glass { min-height: 120px; background: linear-gradient(#DDF6FF 0 30%, #6FD3F7 30% 100%); align-items: center; justify-content: center; }
-.cycle-note { font-weight: 800; color: var(--white); text-align: center; font-size: clamp(0.9rem, 1.3vw, 1.15rem); text-shadow: 0 2px 0 rgba(18, 48, 92, 0.35); }
+.jar[data-zone="same"] .glass { min-height: 200px; background: linear-gradient(#DDF6FF 0 22%, #6FD3F7 22% 100%); }
 .jar.over .glass, .jar.ready:hover .glass { border-color: #FFE27A; box-shadow: 0 0 0 6px rgba(255, 226, 122, 0.6), 0 8px 0 rgba(255, 255, 255, 0.55); }
 .jar:focus-visible { outline: 4px solid var(--white); outline-offset: 4px; border-radius: 20px; }
 .slot { border: 3px dashed var(--white); border-radius: 12px; min-height: 44px; background: rgba(255, 255, 255, 0.28); display: flex; }
@@ -130,9 +130,9 @@ h1 {
   .top { grid-template-columns: 1fr; justify-items: center; }
   .badge, .score { justify-self: center; }
   .board { grid-template-columns: 1fr; }
-  .stage { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-areas: "q q" "evap cond" "cycle cycle"; gap: 14px 10px; }
+  .stage { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-areas: "q q" "evap cond" "same same"; gap: 14px 10px; }
   .q { max-width: 110px; margin-top: 0; }
-  .jar[data-zone="cycle"] { margin-top: 0; }
+  .jar[data-zone="same"] { margin-top: 0; }
   .table { padding-bottom: 0; }
   .table::before, .table::after { display: none; }
   .table-top { min-height: 0; }
@@ -164,17 +164,17 @@ h1 {
 
     <section class="stage" aria-label="الأواني">
       <div class="jar" data-zone="evap" tabindex="0" role="group" aria-label="إناء التبخر">
-        <div class="jar-label"><b>التبخر</b><span>المكان، الاتجاه، السبب، التحول</span></div>
+        <div class="jar-label"><b>التبخر</b><span>بماذا يختلف؟</span></div>
         <div class="glass"><div class="slot"></div><div class="slot"></div><div class="slot"></div><div class="slot"></div></div>
       </div>
       <img class="q" id="q" src="qattoura.png" alt="قطّورة ترفع الإناءين" width="812" height="1164">
       <div class="jar" data-zone="cond" tabindex="0" role="group" aria-label="إناء التكثف">
-        <div class="jar-label"><b>التكثف</b><span>المكان، الاتجاه، السبب، التحول</span></div>
+        <div class="jar-label"><b>التكثف</b><span>بماذا يختلف؟</span></div>
         <div class="glass"><div class="slot"></div><div class="slot"></div><div class="slot"></div><div class="slot"></div></div>
       </div>
-      <div class="jar" data-zone="cycle" role="img" aria-label="إناء دورة الماء">
-        <div class="jar-label"><b>دورة الماء</b><span>يصبّ فيه الإناءان</span></div>
-        <div class="glass"><p class="cycle-note">التبخر والتكثف<br>مرحلتان في دورة الماء</p></div>
+      <div class="jar" data-zone="same" tabindex="0" role="group" aria-label="إناء التشابه">
+        <div class="jar-label"><b>التشابه</b><span>كلاهما</span></div>
+        <div class="glass"><div class="slot"></div><div class="slot"></div><div class="slot"></div></div>
       </div>
     </section>
   </div>
@@ -183,7 +183,7 @@ h1 {
 <script>
 const ANSWER_MODE = /answers\/?$/.test(location.pathname) || /[?&]answers\b/.test(location.search);
 
-/* Eight cards: the objective's four criteria for each process. */
+/* Eleven cards: the four criteria for each process, and the three similarities. */
 const CARDS = [
   { id: 'e1', key: 'المكان', text: 'عند سطح البحر', zone: 'evap' },
   { id: 'e2', key: 'الاتجاه', text: 'يصعد بخار الماء إلى أعلى', zone: 'evap' },
@@ -192,7 +192,10 @@ const CARDS = [
   { id: 'c1', key: 'المكان', text: 'في الأعلى، في السماء', zone: 'cond' },
   { id: 'c2', key: 'الاتجاه', text: 'تتجمع القطرات في الأعلى فتتشكل الغيوم', zone: 'cond' },
   { id: 'c3', key: 'السبب', text: 'التبريد ببرودة الجو', zone: 'cond' },
-  { id: 'c4', key: 'التحول', text: 'من غاز إلى سائل', zone: 'cond' }
+  { id: 'c4', key: 'التحول', text: 'من غاز إلى سائل', zone: 'cond' },
+  { id: 's1', key: 'المكان', text: 'كلاهما يحدث في الطبيعة', zone: 'same' },
+  { id: 's2', key: 'السبب', text: 'كلاهما يحدث بسبب تغيّر درجة الحرارة', zone: 'same' },
+  { id: 's3', key: 'التحول', text: 'كلاهما تتغير فيه حالة الماء', zone: 'same' }
 ];
 const WHY = {
   e1: 'التبخر يحدث عند سطح البحر.',
@@ -202,10 +205,13 @@ const WHY = {
   c1: 'التكثف يحدث في الأعلى، في السماء.',
   c2: 'في التكثف تتجمع القطرات في الأعلى فتتشكل الغيوم.',
   c3: 'بخار الماء يبرد في الأعلى فيتكثف.',
-  c4: 'في التكثف يتحول بخار الماء إلى قطرات ماء.'
+  c4: 'في التكثف يتحول بخار الماء إلى قطرات ماء.',
+  s1: 'التبخر يحدث في البحر، والتكثف في السماء، وكلاهما يحدث في الطبيعة. هذا تشابه.',
+  s2: 'في التبخر يسخن الماء، وفي التكثف يبرد بخار الماء: درجة الحرارة تتغير في كليهما. هذا تشابه.',
+  s3: 'في التبخر وفي التكثف تتغير حالة الماء. هذا تشابه.'
 };
-const JAR_NAME = { evap: 'إناء التبخر', cond: 'إناء التكثف' };
-const HELP = 'اسحب كل بطاقة من الطاولة إلى إناء التبخر أو إناء التكثف';
+const JAR_NAME = { evap: 'إناء التبخر', cond: 'إناء التكثف', same: 'إناء التشابه' };
+const HELP = 'اسحب كل بطاقة من الطاولة إلى الإناء المناسب';
 const num = n => n.toLocaleString('ar-EG');
 
 const tableEl = document.getElementById('table');
@@ -214,8 +220,7 @@ const scoreEl = document.getElementById('score');
 const qEl = document.getElementById('q');
 const againBtn = document.getElementById('again');
 const jars = {};
-document.querySelectorAll('.jar[data-zone="evap"], .jar[data-zone="cond"]').forEach(j => { jars[j.dataset.zone] = j; });
-const cycleJar = document.querySelector('.jar[data-zone="cycle"]');
+document.querySelectorAll('.jar').forEach(j => { jars[j.dataset.zone] = j; });
 
 let placed = {};
 let order = [];
@@ -333,11 +338,6 @@ function shake(id) {
 function drop(id, zone) {
   const c = CARDS.find(x => x.id === id);
   select(null);
-  if (zone === 'cycle') {
-    shake(id);
-    say('هذا إناء دورة الماء. ضع البطاقة في إناء التبخر أو إناء التكثف.', true);
-    return;
-  }
   if (zone !== c.zone) {
     shake(id);
     say('فكّر مرة أخرى: ' + WHY[id], true);
@@ -396,7 +396,6 @@ Object.values(jars).forEach(j => {
     if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); drop(selected, j.dataset.zone); }
   });
 });
-cycleJar.addEventListener('click', () => { if (selected) drop(selected, 'cycle'); });
 againBtn.addEventListener('click', () => {
   placed = {};
   order = shuffle(CARDS.map(c => c.id));
