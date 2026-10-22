@@ -65,11 +65,13 @@ const camera = new THREE.PerspectiveCamera(55, 1, 0.1, 100);
 const CAM_Y = 1.2, CAM_Z = 9.5;
 const SHOP_Y = -2.62, SHOP_Z = 5.9;           // close-up that keeps Qattoura in the upper part of the screen
 // on a wide screen the shop counter fills the right half and Qattoura stands big in the middle of the left half
-const SHOP_WIDE_Y = -1.25, SHOP_WIDE_Z = 3.3;
+const SHOP_WIDE_Y = -1.15, SHOP_WIDE_Z = 2.9;
 function shopView() {
   const wide = camera.aspect >= 1.25;
   const z = wide ? SHOP_WIDE_Z : SHOP_Z;
-  const x = wide ? Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)) * z * camera.aspect * 0.5 : 0;
+  // shop: Qattoura in the left half; farewell: Qattoura in the right half, beside the letter
+  const side = S.mode === 'bye' ? -1 : 1;
+  const x = wide ? side * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)) * z * camera.aspect * 0.5 : 0;
   return { x, y: wide ? SHOP_WIDE_Y : SHOP_Y, z };
 }
 camera.position.set(0, CAM_Y, CAM_Z);
@@ -605,6 +607,10 @@ function openBye() {
   const won = S.badges.map((b) => '<span class="goldmini"><i>' + b.icon + '</i><small>' + b.name.replace('بطاقة ', '').replace(' الذهبية', '') + '</small></span>').join('');
   $('byeWon').innerHTML = (won ? 'بطاقاتك الذهبية: ' + won + ' · ' : '') + 'قطعك النقدية: ' + ar(state.bank) + ' <i class="coin"></i>';
   showPanel('bye');
+  { const v = shopView(); camera.position.set(v.x, v.y, v.z); }
+  player.position.x = 0; S.targetX = 0; player.scale.setScalar(1); setPlayerOpacity(1);
+  bigCloud.scale.setScalar(1); bigCloud.position.x = 0;
+  dress();
 }
 $('byeBtn').addEventListener('click', openBye);
 $('byeBtn2').addEventListener('click', openBye);
@@ -686,7 +692,8 @@ function collect(it) {
 function update(dt) {
   S.time += dt;
   if (mixer) { mixer.update(dt); }
-  const shop = S.mode === 'shop';
+  // the farewell shows the same big, happy, dressed Qattoura as the shop
+  const shop = S.mode === 'shop' || S.mode === 'bye';
 
   // the camera comes close in the shop, and goes back for the climb
   const ease = Math.min(1, dt * 5);
@@ -698,7 +705,7 @@ function update(dt) {
   // Qattoura follows the finger; in the shop she turns from side to side to show what she wears
   player.position.x += (S.targetX - player.position.x) * Math.min(1, dt * 9);
   player.rotation.z = (player.position.x - S.targetX) * 0.12;
-  player.rotation.y += ((shop ? Math.sin(S.time * 0.9) * 0.75 : 0) - player.rotation.y) * Math.min(1, dt * 6);
+  player.rotation.y += ((shop ? Math.sin(S.time * 0.9) * (S.mode === 'bye' ? 0.3 : 0.75) : 0) - player.rotation.y) * Math.min(1, dt * 6);
   // in the shop she is happy with what she achieved: she hops and wiggles
   const hop = shop ? Math.abs(Math.sin(S.time * 3.2)) * 0.32 : 0;
   player.position.y += (-1.9 + hop - player.position.y) * Math.min(1, dt * 12);
