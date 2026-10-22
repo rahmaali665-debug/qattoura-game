@@ -2,16 +2,34 @@
 // so it follows her bounce and her waving arms. Positions are in the model's own units (y up, face towards +z).
 import * as THREE from 'three';
 
-export const GOODS = [
-  { id: 'bow', name: 'ربطة عنق', price: 30, slot: 'neck', tint: '#e8344e' },
-  { id: 'glasses', name: 'نظارة', price: 40, slot: 'eyes', tint: '#ff5a4d' },
-  { id: 'hat', name: 'قبعة', price: 40, slot: 'head', tint: '#7b4fd6' },
-  { id: 'gloves', name: 'قفازات', price: 50, slot: 'hands', tint: '#ffd23a' },
-  { id: 'shoes', name: 'حذاء', price: 50, slot: 'feet', tint: '#ff4d6d' },
-  { id: 'scarf', name: 'وشاح', price: 60, slot: 'neck', tint: '#2fae66' },
-  { id: 'crown', name: 'تاج', price: 100, slot: 'head', tint: '#ffc928' },
-  { id: 'cape', name: 'عباءة البطل', price: 120, slot: 'back', tint: '#e8344e', back: true }
+// Each kind comes in several colours so every child can dress Qattoura their own way.
+// The first colour of each kind keeps its old id, so things already bought on a tablet stay valid.
+const COLORS = {
+  red: ['#e8344e', '#ff6b5e', 'حمراء'], blue: ['#2f7de0', '#6fb4ff', 'زرقاء'], pink: ['#ff4d9a', '#ff9cc8', 'وردية'],
+  yellow: ['#ffc21a', '#ffe27a', 'صفراء'], green: ['#2fae66', '#7ddc9f', 'خضراء'], violet: ['#7b4fd6', '#a98af0', 'بنفسجية'],
+  black: ['#2c2c3c', '#55556a', 'سوداء'], orange: ['#ff8a1f', '#ffb860', 'برتقالية'], gold: ['#ffc928', '#ffe08a', 'ذهبية']
+};
+const KINDS = [
+  { base: 'bow', name: 'ربطة عنق', price: 30, slot: 'neck', colors: ['red', 'blue', 'pink', 'yellow', 'green', 'violet'] },
+  { base: 'glasses', name: 'نظارة', price: 40, slot: 'eyes', colors: ['red', 'blue', 'pink', 'black', 'green', 'yellow'] },
+  { base: 'flower', name: 'وردة', price: 35, slot: 'flower', colors: ['pink', 'red', 'yellow', 'violet', 'orange'] },
+  { base: 'hat', name: 'قبعة', price: 40, slot: 'head', colors: ['violet', 'red', 'blue', 'green'] },
+  { base: 'gloves', name: 'قفازات', price: 50, slot: 'hands', colors: ['yellow', 'blue', 'pink'] },
+  { base: 'shoes', name: 'حذاء', price: 50, slot: 'feet', colors: ['pink', 'blue', 'red', 'yellow'], masc: true },
+  { base: 'scarf', name: 'وشاح', price: 60, slot: 'neck', colors: ['green', 'red', 'blue', 'violet'], masc: true },
+  { base: 'crown', name: 'تاج', price: 100, slot: 'head', colors: ['gold'], plain: true },
+  { base: 'cape', name: 'عباءة البطل', price: 120, slot: 'back', colors: ['red', 'blue', 'violet'], back: true }
 ];
+// masculine colour words for the masculine nouns (shoes, scarf)
+const MASC = { 'حمراء': 'أحمر', 'زرقاء': 'أزرق', 'وردية': 'وردي', 'صفراء': 'أصفر', 'خضراء': 'أخضر', 'بنفسجية': 'بنفسجي',
+  'سوداء': 'أسود', 'برتقالية': 'برتقالي', 'ذهبية': 'ذهبي' };
+export const GOODS = [];
+KINDS.forEach((k) => k.colors.forEach((c, i) => {
+  const [main, light, word] = COLORS[c];
+  const name = k.plain ? k.name : k.base === 'cape' ? 'عباءة البطل ال' + word : k.name + ' ' + (k.masc ? MASC[word] : word);
+  GOODS.push({ id: i === 0 ? k.base : k.base + '-' + c, base: k.base, name, price: k.price, slot: k.slot,
+    tint: main, main, light, back: !!k.back });
+}));
 
 // where each arm node sits in the model, needed only to draw the shop pictures
 const NODE_AT = { drop_body: [0, 0, 0], arm_L: [0.5, -0.05, 0], arm_R: [-0.5, -0.05, 0] };
@@ -32,6 +50,14 @@ const M = {
   lens: mat(0x2b3f66, { opacity: 0.42, roughness: 0.1 }),
   cape: mat(0xe8344e, { side: THREE.DoubleSide, roughness: 0.6 })
 };
+
+const byColor = new Map();
+function cmat(hex, extra = {}) {
+  const key = hex + JSON.stringify(extra);
+  if (!byColor.has(key)) { byColor.set(key, mat(new THREE.Color(hex), extra)); }
+  return byColor.get(key);
+}
+const darker = (hex) => '#' + new THREE.Color(hex).multiplyScalar(0.72).getHexString();
 
 function part(geometry, material, pos = [0, 0, 0], rot = [0, 0, 0], scale = [1, 1, 1]) {
   const m = new THREE.Mesh(geometry, material);
@@ -54,53 +80,65 @@ const G = {
 
 // Each builder returns a list of { node, group }.
 const BUILD = {
-  bow() {
+  bow(c) {
     const g = new THREE.Group();
     g.position.set(0.02, -0.62, 0.5);
-    g.add(part(G.cone, M.red, [0.15, 0, 0], [0, 0, Math.PI / 2], [0.15, 0.26, 0.09]));
-    g.add(part(G.cone, M.red, [-0.15, 0, 0], [0, 0, -Math.PI / 2], [0.15, 0.26, 0.09]));
-    g.add(part(G.ball, M.redLight, [0, 0, 0.03], [0, 0, 0], [0.075, 0.075, 0.075]));
+    g.add(part(G.cone, cmat(c.main), [0.15, 0, 0], [0, 0, Math.PI / 2], [0.15, 0.26, 0.09]));
+    g.add(part(G.cone, cmat(c.main), [-0.15, 0, 0], [0, 0, -Math.PI / 2], [0.15, 0.26, 0.09]));
+    g.add(part(G.ball, cmat(c.light), [0, 0, 0.03], [0, 0, 0], [0.075, 0.075, 0.075]));
     return [{ node: 'drop_body', group: g }];
   },
-  glasses() {
+  glasses(c) {
     const g = new THREE.Group();
     [-1, 1].forEach((s) => {
       const x = 0.02 + s * 0.235;
-      g.add(part(G.ring, M.redLight, [x, 0.06, 0.7], [0, s * 0.18, 0]));
+      g.add(part(G.ring, cmat(c.main), [x, 0.06, 0.7], [0, s * 0.18, 0]));
       g.add(part(G.disc, M.lens, [x, 0.06, 0.7], [0, s * 0.18, 0]));
     });
-    g.add(part(G.rod, M.redLight, [0.02, 0.1, 0.71], [0, 0, Math.PI / 2], [1.2, 0.1, 1.2]));
+    g.add(part(G.rod, cmat(c.main), [0.02, 0.1, 0.71], [0, 0, Math.PI / 2], [1.2, 0.1, 1.2]));
     return [{ node: 'drop_body', group: g }];
   },
-  hat() {
+  hat(c) {
     const g = new THREE.Group();
     g.position.set(0.1, 0.9, 0); g.rotation.z = -0.2;
-    g.add(part(G.drum, M.violetDark, [0, 0, 0], [0, 0, 0], [0.44, 0.05, 0.44]));
-    g.add(part(G.drum, M.violet, [0, 0.26, 0], [0, 0, 0], [0.27, 0.48, 0.27]));
+    g.add(part(G.drum, cmat(darker(c.main)), [0, 0, 0], [0, 0, 0], [0.44, 0.05, 0.44]));
+    g.add(part(G.drum, cmat(c.main), [0, 0.26, 0], [0, 0, 0], [0.27, 0.48, 0.27]));
     g.add(part(G.drum, M.gold, [0, 0.08, 0], [0, 0, 0], [0.285, 0.1, 0.285]));
     return [{ node: 'drop_body', group: g }];
   },
-  gloves() {
+  gloves(c) {
     return [['arm_L', 1], ['arm_R', -1]].map(([node, s]) => {
       const g = new THREE.Group();
-      g.add(part(G.ball, M.yellow, [s * 0.52, 0.64, 0], [0, 0, s * -0.2], [0.22, 0.25, 0.18]));
+      g.add(part(G.ball, cmat(c.main), [s * 0.52, 0.64, 0], [0, 0, s * -0.2], [0.22, 0.25, 0.18]));
       g.add(part(G.cuff, M.red, [s * 0.46, 0.43, 0], [Math.PI / 2, 0, 0]));
       return { node, group: g };
     });
   },
-  shoes() {
+  shoes(c) {
     const g = new THREE.Group();
     [-1, 1].forEach((s) => {
-      g.add(part(G.ball, M.pink, [s * 0.3, -1.07, 0.1], [0, 0, 0], [0.2, 0.15, 0.3]));
+      g.add(part(G.ball, cmat(c.main), [s * 0.3, -1.07, 0.1], [0, 0, 0], [0.2, 0.15, 0.3]));
       g.add(part(G.ball, M.white, [s * 0.3, -1.08, 0.3], [0, 0, 0], [0.13, 0.1, 0.1]));
     });
     return [{ node: 'drop_body', group: g }];
   },
-  scarf() {
+  scarf(c) {
     const g = new THREE.Group();
-    g.add(part(G.loop, M.green, [0, -0.56, 0], [Math.PI / 2, 0, 0], [0.5, 0.5, 0.45]));
-    g.add(part(G.box, M.green, [0.3, -0.78, 0.44], [0.1, 0, 0.18], [0.17, 0.38, 0.07]));
-    g.add(part(G.box, M.greenLight, [0.33, -0.93, 0.455], [0.1, 0, 0.18], [0.175, 0.07, 0.075]));
+    g.add(part(G.loop, cmat(c.main), [0, -0.56, 0], [Math.PI / 2, 0, 0], [0.5, 0.5, 0.45]));
+    g.add(part(G.box, cmat(c.main), [0.3, -0.78, 0.44], [0.1, 0, 0.18], [0.17, 0.38, 0.07]));
+    g.add(part(G.box, cmat(c.light), [0.33, -0.93, 0.455], [0.1, 0, 0.18], [0.175, 0.07, 0.075]));
+    return [{ node: 'drop_body', group: g }];
+  },
+  flower(c) {
+    // petals round a yellow middle, pinned on the side of her head
+    const g = new THREE.Group();
+    g.position.set(-0.36, 0.5, 0.42); g.rotation.set(-0.25, -0.5, 0.3);
+    for (let i = 0; i < 6; i++) {
+      const a = (i / 6) * Math.PI * 2;
+      g.add(part(G.ball, cmat(i % 2 ? c.light : c.main), [Math.cos(a) * 0.12, Math.sin(a) * 0.12, 0], [0, 0, a], [0.1, 0.065, 0.04]));
+    }
+    g.add(part(G.ball, cmat('#ffd23a'), [0, 0, 0.03], [0, 0, 0], [0.065, 0.065, 0.05]));
+    g.add(part(G.ball, cmat('#2fae66'), [0.13, -0.15, -0.02], [0, 0, -0.6], [0.09, 0.04, 0.02]));
     return [{ node: 'drop_body', group: g }];
   },
   crown() {
@@ -114,16 +152,17 @@ const BUILD = {
     }
     return [{ node: 'drop_body', group: g }];
   },
-  cape() {
+  cape(c) {
     const g = new THREE.Group();
-    g.add(part(G.cape, M.cape, [0, -0.3, -0.02]));
+    g.add(part(G.cape, cmat(c.main, { side: THREE.DoubleSide, roughness: 0.6 }), [0, -0.3, -0.02]));
     [-1, 1].forEach((s) => g.add(part(G.ball, M.gold, [s * 0.5, 0.3, 0.2], [0, 0, 0], [0.07, 0.07, 0.07])));
     return [{ node: 'drop_body', group: g }];
   }
 };
 
 export function buildAccessory(id) {
-  const parts = BUILD[id]();
+  const gd = GOODS.find((g) => g.id === id);
+  const parts = BUILD[gd.base](gd);
   parts.forEach((p) => { p.group.userData.accessory = id; });
   return parts;
 }

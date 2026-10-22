@@ -7,7 +7,7 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { STARS, MAX_BANK, loadState, saveState, resetState, earnedStars } from './save.js';
-import { GOODS, applyWorn, setOpacity as setWardrobeOpacity, renderThumbs } from './wardrobe.js';
+import { GOODS, applyWorn, setOpacity as setWardrobeOpacity, renderThumbs } from './wardrobe.js?v=2';
 
 const $ = (id) => document.getElementById(id);
 const ar = (n) => String(n).replace(/\d/g, (d) => '٠١٢٣٤٥٦٧٨٩'[d]);
@@ -618,6 +618,8 @@ $('byeBtn2').addEventListener('click', openBye);
 $('byeBack').addEventListener('click', () => { S.mode = 'start'; showPanel('start'); });
 $('byeExit').addEventListener('click', () => {
   S.mode = 'gone';
+  // the tablet is shared: the next child starts fresh, with Qattoura undressed and no coins, things or stars
+  state = resetState(); dress();
   try { window.close(); } catch (e) { /* the page stays open; the note below tells the pupil it is over */ }
   $('byeGone').hidden = false;
 });
