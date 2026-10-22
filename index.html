@@ -104,45 +104,111 @@
     .mini:disabled { opacity: .55; }
     .mini.warn { background: #ffe3e0; color: #a8200d; border-color: #ff8a80; }
 
-    /* ---------- start screen ---------- */
-    #start { padding: 1vh 14px 1.2vh; }
+    /* ---------- start screen ----------
+       Layers on one screen with no scrolling: a sky with drifting clouds and far-away birds, Qattoura in the
+       middle on her cloud with the title under it, a card that slides in from the right, more drops on clouds
+       in the sky, the side doors in a small cloud, then the three steps and the glowing start button at the bottom. */
+    #start.panel.show { display: block; }
+    #start { padding: 0; overflow: hidden; color: var(--ink);
+      background: linear-gradient(#5ab9f5 0%, #8fd3ff 45%, #cdeeff 100%);
+      /* --bottom: room for the steps row and the start button; --hh: height of the Qattoura picture */
+      --bottom: min(31vh, 250px); --hh: min(calc(100vh - var(--bottom) - 13vh), 62vw); }
+    #start > * { margin: 0; }
+
+    /* far-away sky: soft clouds drifting and small birds crossing slowly */
+    .skyfx { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+    .skyfx .cl { position: absolute; background: #fff; border-radius: 999px; opacity: .75; filter: blur(1px);
+      animation: driftCloud linear infinite; }
+    .skyfx .cl::before, .skyfx .cl::after { content: ""; position: absolute; background: #fff; border-radius: 50%; }
+    .skyfx .cl::before { width: 55%; height: 170%; left: 12%; bottom: 20%; }
+    .skyfx .cl::after { width: 40%; height: 130%; right: 14%; bottom: 25%; }
+    .skyfx .a { width: 190px; height: 44px; top: 9%; animation-duration: 70s; animation-delay: -20s; }
+    .skyfx .b { width: 140px; height: 34px; top: 30%; animation-duration: 90s; animation-delay: -55s; opacity: .6; }
+    .skyfx .c { width: 230px; height: 52px; top: 52%; animation-duration: 110s; animation-delay: -80s; opacity: .55; }
+    @keyframes driftCloud { from { transform: translateX(-30vw); } to { transform: translateX(130vw); } }
+    .skyfx .birds { position: absolute; width: 120px; height: 40px; animation: flyBirds linear infinite; }
+    .skyfx .birds.b1 { top: 13%; animation-duration: 38s; animation-delay: -8s; }
+    .skyfx .birds.b2 { top: 24%; animation-duration: 52s; animation-delay: -30s; transform: scale(.7); }
+    .skyfx .birds path { fill: none; stroke: #2f5f8f; stroke-width: 2.4; stroke-linecap: round; opacity: .6;
+      animation: flap .6s ease-in-out infinite alternate; transform-origin: center; transform-box: fill-box; }
+    .skyfx .birds path:nth-child(2) { animation-delay: .2s; }
+    .skyfx .birds path:nth-child(3) { animation-delay: .4s; }
+    @keyframes flap { to { transform: scaleY(.45); } }
+    @keyframes flyBirds { from { left: 110%; } to { left: -20%; } }
+
+    /* Qattoura in the middle on her cloud, with the title just under the cloud */
+    #start .center { position: absolute; left: 50%; top: 1.5vh; transform: translateX(-50%); z-index: 2;
+      display: flex; flex-direction: column; align-items: center; pointer-events: none; }
+    #start .hero { height: var(--hh); display: block; animation: bob 3s ease-in-out infinite; }
     @keyframes bob { 50% { transform: translateY(-8px); } }
-    #start h1 { margin: 0; line-height: 1.12; font-weight: 800; text-shadow: 0 4px 0 rgba(11, 61, 107, .28); }
-    #start h1 .who { display: block; font-size: min(4.4vh, 2.8rem); }
-    #start h1 .what { display: block; font-size: min(5.8vh, 3.5rem, 11.5vw); color: var(--gold-light); white-space: nowrap; }
-    #start .lead { margin: 0.3vh 0 0; font-size: min(2.4vh, 1.45rem); font-weight: 700; line-height: 1.45; max-width: 30rem; }
-    .how { display: grid; gap: 0.9vh; width: min(94vw, 460px); margin-top: 1vh; }
-    .how span { border-radius: var(--r-md); padding: 0.55vh 10px; font-weight: 700; font-size: min(2.6vh, 1.55rem, 5.4vw); white-space: nowrap;
-      color: #fff; border: 3px solid #fff; box-shadow: var(--lift-sm); line-height: 1.45; }
-    .how .c1 { background: linear-gradient(#46c57e, var(--mint)); }
-    .how .c2 { background: linear-gradient(#ffb62e, var(--amber)); }
-    .how .c3 { background: linear-gradient(#a47ae8, var(--violet)); }
-    .promise { background: var(--paper); color: #a04f00; font-weight: 700; border-radius: var(--r-lg); padding: 0.7vh 12px; margin: 1.1vh 0 0;
-      font-size: min(2.35vh, 1.45rem); line-height: 1.45; width: min(94vw, 460px); border: 4px dashed #ffb13d; }
-    #start .btn { font-size: min(3.1vh, 1.9rem, 6vw); padding: 0.9vh 18px; margin-top: 1.5vh; white-space: nowrap; min-height: 0; }
-    .minirow { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-top: 1.5vh; width: min(96vw, 470px); }
-    .minirow .mini { font-size: min(2.2vh, 1.05rem, 4.2vw); padding: 2px 10px; }
-    #loading { font-size: .95rem; min-height: 1.1em; line-height: 1.1; }
-    /* the scene: big Qattoura in her cloud, her friends on their cloud, and what she says.
-       Narrow screens: a band across the top. Wide screens: Qattoura fills the left side, her friends sit under the buttons. */
-    #start .startui { display: flex; flex-direction: column; align-items: center; width: 100%; margin-block: 0 auto; }
-    #start .scene { position: relative; width: calc(100% + 28px); margin-inline: -14px; height: min(31vh, 340px); pointer-events: none; }
-    #start .hero { position: absolute; left: 0; bottom: 0; height: 100%; max-width: 62%; object-fit: contain; object-position: left bottom;
-      -webkit-mask-image: linear-gradient(#000 80%, transparent); mask-image: linear-gradient(#000 80%, transparent); }
-    #start .friends { position: absolute; right: 2vw; bottom: 0; height: 56%; max-width: 46%; object-fit: contain; object-position: right bottom; }
-    #start .hello { position: absolute; right: 4vw; top: 6%; background: var(--paper); color: var(--ink); font-weight: 800;
-      font-size: min(2.5vh, 1.5rem, 4.6vw); line-height: 1.3; padding: 0.7vh 16px; border-radius: var(--r-xl); box-shadow: var(--lift-sm); white-space: nowrap; }
-    #start .hello::after { content: ""; position: absolute; left: 34px; bottom: -11px; border: 8px solid transparent;
-      border-top: 12px solid var(--paper); border-bottom: 0; }
-    @media (min-width: 900px) and (min-aspect-ratio: 5/4) {
-      #start { align-items: flex-start; padding-inline-start: 3.5vw; }
-      #start .startui { width: min(46vw, 600px); margin-block: 1.5vh auto; position: relative; z-index: 2; }
-      #start .scene { display: contents; }
-      #start .hero { height: 97vh; max-width: 52vw; z-index: 1; -webkit-mask-image: none; mask-image: none; }
-      #start .hello { right: auto; left: 11vw; top: 3.5vh; z-index: 2; font-size: min(3.4vh, 1.7rem); padding: 1.1vh 26px; box-shadow: var(--lift); }
-      #start .hello::after { left: 70px; bottom: -13px; border-width: 9px; border-top-width: 14px; }
-      #start .friends { right: 3.5vw; bottom: 2.5vh; width: min(46vw, 600px); max-width: none; height: min(27vh, 250px);
-        object-position: center bottom; z-index: 1; }
+    #start h1 { margin-top: -1vh; font-weight: 800; line-height: 1.1; white-space: nowrap; color: #ffd84a; -webkit-text-stroke: 2px #0b3d6b; paint-order: stroke fill;
+      font-size: min(7.2vh, 4rem, 9vw); text-shadow: 0 4px 0 rgba(11, 61, 107, .45), 0 0 18px rgba(11, 61, 107, .35); position: relative; }
+    #start .hello { position: absolute; top: 4%; left: 72%; background: var(--paper); color: var(--ink); font-weight: 800; white-space: nowrap;
+      font-size: min(3vh, 1.6rem, 4.6vw); line-height: 1.3; padding: 0.8vh 18px; border-radius: var(--r-xl); box-shadow: var(--lift); }
+    #start .hello::after { content: ""; position: absolute; left: 22px; bottom: -12px; border: 9px solid transparent;
+      border-top: 13px solid var(--paper); border-bottom: 0; }
+
+    /* the card that slides in from the right */
+    #start .slide { position: absolute; z-index: 3; right: 2.5vw; top: 16vh; width: min(30vw, 380px);
+      background: var(--paper); border: 5px solid var(--gold); border-radius: var(--r-xl); padding: 1.6vh 18px;
+      box-shadow: var(--lift), 0 0 24px rgba(255, 201, 40, .55); text-align: center;
+      animation: slideIn .9s cubic-bezier(.2, .9, .3, 1.2) .5s both; }
+    @keyframes slideIn { from { transform: translateX(140%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+    #start .slide .lead { font-size: min(3.2vh, 1.65rem, 4.6vw); font-weight: 800; line-height: 1.5; color: var(--ink); }
+    #start .slide .promise { margin-top: 1vh; width: auto; border: 3px dashed #ffb13d; font-size: min(2.4vh, 1.25rem, 3.8vw); padding: .6vh 10px; }
+
+    /* more drops on clouds, as if they are already up in the sky */
+    #start .friends { position: absolute; z-index: 1; pointer-events: none; animation: bob 3.6s ease-in-out infinite; }
+    #start .f1 { left: 3vw; top: 34vh; height: min(22vh, 200px); }
+    #start .f2 { right: 4vw; top: calc(100vh - var(--bottom) - min(11vh, 100px) + 1vh); height: min(11vh, 100px); animation-delay: -1.2s; }
+    #start .f3 { left: 15vw; top: 15vh; height: min(10vh, 90px); opacity: .75; animation-delay: -2.1s; }
+    #start .f4 { right: 4vw; top: 2vh; height: min(9vh, 80px); opacity: .6; animation-delay: -.6s; }
+
+    /* the side doors sit in a small cloud at the top left */
+    #start .doors { position: absolute; z-index: 3; left: 1.5vw; top: 1.5vh; display: flex; gap: 6px; padding: 18px 26px 16px;
+      background: #fff; border-radius: 60px; box-shadow: 0 6px 0 rgba(11, 61, 107, .18); }
+    #start .doors::before, #start .doors::after { content: ""; position: absolute; background: #fff; border-radius: 50%; z-index: -1; }
+    #start .doors::before { width: 46%; height: 120%; left: 14%; top: -38%; }
+    #start .doors::after { width: 32%; height: 100%; right: 12%; top: -26%; }
+    #start .doors .mini { font-size: min(2.1vh, 1.05rem, 3.6vw); padding: 2px 10px; min-height: 44px; background: var(--ice); border-color: var(--ice-line); box-shadow: none; }
+
+    /* bottom: the three steps in one row with the yellow glowing numbers, then the start button */
+    #start .bottom { position: absolute; z-index: 4; left: 0; right: 0; bottom: 0; height: var(--bottom);
+      display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 1.4vh; padding: 0 16px 1.6vh; }
+    #start .how { display: flex; gap: clamp(8px, 1.6vw, 20px); width: min(96vw, 1100px); margin: 0; }
+    #start .how span { flex: 1 1 0; min-width: 0; display: flex; align-items: center; justify-content: center; gap: 10px;
+      background: #fff; color: var(--ink); border: 4px solid #fff; border-radius: 22px; box-shadow: none; white-space: normal;
+      padding: 1.2vh 12px; font-size: min(2.8vh, 1.45rem, 3.8vw); font-weight: 800; line-height: 1.35;
+      animation: glowWhite 1.6s ease-in-out infinite; }
+    #start .how span:nth-child(2), #start .how span:nth-child(2) b { animation-delay: .53s; }
+    #start .how span:nth-child(3), #start .how span:nth-child(3) b { animation-delay: 1.06s; }
+    @keyframes glowWhite { 0%, 100% { box-shadow: 0 0 4px 1px rgba(255, 255, 255, .5); border-color: #d9f1ff; }
+      50% { box-shadow: 0 0 30px 10px rgba(255, 255, 255, .98); border-color: #fff; } }
+    #start .how b { flex: none; width: min(6.4vh, 58px); aspect-ratio: 1; border-radius: 50%; display: grid; place-items: center;
+      font-size: min(3.4vh, 1.8rem); color: var(--ink); border: 3px solid #fff3a0;
+      background: radial-gradient(circle at 40% 35%, #fff59a, #ffd400 60%, #f5b800); animation: glowNum 1.6s ease-in-out infinite; }
+    @keyframes glowNum { 0%, 100% { box-shadow: 0 0 4px 2px rgba(255, 212, 0, .5); } 50% { box-shadow: 0 0 26px 10px rgba(255, 212, 0, 1); } }
+    #start .btn { margin: 0; white-space: nowrap; min-height: 0; font-weight: 900; color: #fff;
+      font-size: min(4vh, 2.1rem, 6vw); padding: 1.2vh clamp(30px, 5vw, 70px); border: 5px solid #ffe14d;
+      background: radial-gradient(circle at 50% 30%, #ffc266 0%, #ff8a1f 45%, #e85d00 100%); text-shadow: 0 2px 3px rgba(120, 40, 0, .6);
+      animation: glowYellow 1.1s ease-in-out infinite; }
+    @keyframes glowYellow {
+      0%, 100% { box-shadow: 0 0 8px 3px rgba(255, 225, 0, .55), 0 0 12px 2px rgba(255, 236, 150, .6) inset; border-color: #ffe14d; }
+      50% { box-shadow: 0 0 46px 18px rgba(255, 220, 0, .95), 0 0 26px 8px rgba(255, 240, 170, .9) inset; border-color: #fff36b; } }
+    #start .btn:disabled { animation: none; opacity: .65; }
+    #start #loading { position: absolute; bottom: .3vh; left: 0; right: 0; font-size: min(1.8vh, .95rem); color: #fff; text-shadow: 0 1px 2px rgba(0, 0, 0, .4); }
+
+    /* upright phone: the card stops sliding over Qattoura and sits under the title; the doors cloud stays on top */
+    @media (max-aspect-ratio: 3/4) {
+      #start { --bottom: min(30vh, 260px); --hh: min(38vh, 70vw); }
+      #start .center { top: 10vh; }
+      #start .hello { left: auto; right: -14px; top: 4%; }
+      #start .slide { left: 4vw; right: 4vw; width: auto; top: calc(10vh + var(--hh) + 6vh); padding: 1vh 12px; }
+      #start .f1 { left: -6vw; top: 26vh; height: 12vh; }
+      #start .f2 { right: -4vw; top: 30vh; height: 10vh; }
+      #start .f3, #start .f4 { display: none; }
+      #start .doors { left: 50%; transform: translateX(-50%); padding: 12px 16px 10px; }
+      #start .how span { flex-direction: column; gap: 4px; padding: 8px 4px; text-align: center; }
     }
 
     /* ---------- link to the AR activity ---------- */
@@ -274,27 +340,37 @@
 
 <!-- Start screen -->
 <div id="start" class="panel show">
-  <div class="scene">
-    <img class="hero" src="start-hero.webp" alt="قطّورة فرحة في غيمتها">
-    <img class="friends" src="start-friends.webp" alt="صديقات قطّورة فوق غيمة">
+  <div class="skyfx" aria-hidden="true">
+    <i class="cl a"></i><i class="cl b"></i><i class="cl c"></i>
+    <svg class="birds b1" viewBox="0 0 120 40"><path d="M10 20 q8 -10 16 0 q8 -10 16 0"/><path d="M52 10 q6 -8 12 0 q6 -8 12 0"/><path d="M84 26 q5 -7 10 0 q5 -7 10 0"/></svg>
+    <svg class="birds b2" viewBox="0 0 120 40"><path d="M10 20 q8 -10 16 0 q8 -10 16 0"/><path d="M52 12 q6 -8 12 0 q6 -8 12 0"/><path d="M84 24 q5 -7 10 0 q5 -7 10 0"/></svg>
+  </div>
+  <img class="friends f3" src="start-friends.webp" alt="">
+  <img class="friends f4" src="start-friends.webp" alt="">
+  <img class="friends f1" src="start-friends.webp" alt="صديقات قطّورة فوق غيمة">
+  <img class="friends f2" src="start-friends.webp" alt="">
+  <div class="center">
+    <img class="hero" src="start-hero-soft.webp" alt="قطّورة فرحة في غيمتها">
     <div class="hello">هيّا نصعد إلى الغيمة!</div>
+    <h1>قطّورة تصعد إلى الغيمة</h1>
   </div>
-  <div class="startui">
-  <h1><span class="who">قطّورة</span><span class="what">تصعد إلى الغيمة</span></h1>
-  <p class="lead">ساعد قطّورة لتصعد إلى السماء، وتبرد، وتتحول إلى قطرة ماء.</p>
-  <div class="how">
-    <span class="c1">👆 اسحب إصبعك يميناً ويساراً</span>
-    <span class="c2"><i class="coin"></i> اجمع القطع النقدية</span>
-    <span class="c3">⭐ اجمع ٣ بطاقات ذهبية</span>
+  <div class="slide">
+    <p class="lead">ساعد قطّورة لتصعد إلى السماء، وتبرد، وتتحول إلى قطرة ماء.</p>
+    <p class="promise">🎁 بالقطع النقدية تشتري ملابس لقطّورة، وبلعبك الجيد تربح نجوماً في لوحة النجوم</p>
   </div>
-  <p class="promise">🎁 بالقطع النقدية تشتري ملابس لقطّورة، وبلعبك الجيد تربح نجوماً في لوحة النجوم</p>
-  <button id="startBtn" class="btn" type="button" disabled>▶ ابدأ المغامرة مع قطّورة</button>
-  <div class="minirow">
+  <div class="doors">
     <button id="miniStars" class="mini" type="button">⭐ لوحة النجوم</button>
     <button id="miniShop" class="mini" type="button" disabled>🛍️ المتجر</button>
     <button id="miniReset" class="mini" type="button">👤 لاعب جديد</button>
   </div>
-  <div id="loading">جاري تحميل اللعبة…</div>
+  <div class="bottom">
+    <div class="how">
+      <span><b>١</b>👆 اسحب إصبعك يميناً ويساراً</span>
+      <span><b>٢</b><i class="coin"></i> اجمع القطع النقدية</span>
+      <span><b>٣</b>⭐ اجمع ٣ بطاقات ذهبية</span>
+    </div>
+    <button id="startBtn" class="btn" type="button" disabled>▶ ابدأ المغامرة مع قطّورة</button>
+    <div id="loading">جاري تحميل اللعبة…</div>
   </div>
 </div>
 
