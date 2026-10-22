@@ -112,7 +112,7 @@
     #start { padding: 0; overflow: hidden; color: var(--ink);
       background: linear-gradient(#5ab9f5 0%, #8fd3ff 45%, #cdeeff 100%);
       /* --bottom: room for the steps row and the start button; --hh: height of the Qattoura picture */
-      --bottom: min(31vh, 250px); --hh: min(calc(100vh - var(--bottom) + 3vh), 68vw); }
+      --bottom: min(31vh, 250px); --hh: min(calc(100vh - var(--bottom) + 9vh), 70vw); }
     #start > * { margin: 0; }
 
     /* far-away sky: soft clouds drifting and small birds crossing slowly */
@@ -139,9 +139,13 @@
     @keyframes flyBirds { from { left: 110%; } to { left: -20%; } }
     /* birds that circle near the drop clouds on the left */
     .skyfx .near { position: absolute; width: 150px; height: 48px; animation: hover 7s ease-in-out infinite; }
-    .skyfx .near.l1 { left: 2vw; top: 30vh; }
-    .skyfx .near.l2 { left: 13vw; top: 7vh; width: 120px; height: 38px; animation-delay: -2.5s; }
-    .skyfx .near.l3 { left: 19vw; top: 44vh; width: 110px; height: 36px; animation-delay: -4.5s; }
+    .skyfx .near.l1 { left: 5vw; top: 34vh; }
+    .skyfx .near.l2 { left: 14vw; top: 10vh; width: 130px; height: 42px; animation-delay: -2.5s; }
+    .skyfx .near.l3 { left: 24vw; top: 30vh; width: 120px; height: 38px; animation-delay: -4.5s; }
+    .skyfx .near.r1 { right: 6vw; top: 28vh; animation-delay: -1.5s; }
+    .skyfx .near.r2 { right: 22vw; top: 33vh; width: 120px; height: 38px; animation-delay: -3.5s; }
+    .skyfx .near.r3 { right: 12vw; top: 58vh; width: 110px; height: 36px; animation-delay: -5.5s; }
+    .skyfx .near.l4 { left: 6vw; top: 60vh; width: 110px; height: 36px; animation-delay: -6s; }
     @keyframes hover { 0%, 100% { transform: translate(0, 0); } 33% { transform: translate(40px, -14px); } 66% { transform: translate(-20px, 8px); } }
 
     /* Qattoura in the middle on her cloud, with the title just under the cloud */
@@ -149,8 +153,8 @@
       display: flex; flex-direction: column; align-items: center; pointer-events: none; }
     #start .hero { height: var(--hh); display: block; animation: bob 3s ease-in-out infinite; }
     @keyframes bob { 50% { transform: translateY(-8px); } }
-    #start h1 { margin-top: -15vh; padding: 2.2vh 3.4vw 2.6vh; background: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20600%20170%22%20preserveAspectRatio%3D%22none%22%3E%3Cpath%20fill%3D%22%23fff%22%20d%3D%22M60%20150%20C20%20150%204%20122%2018%20100%20C0%2080%2014%2050%2046%2050%20C50%2022%2090%208%20120%2024%20C140%200%20190%20-2%20214%2018%20C240%20-4%20300%20-2%20318%2020%20C344%20-2%20400%202%20414%2026%20C440%206%20494%2012%20504%2042%20C546%2036%20584%2062%20578%2096%20C598%20116%20588%20150%20552%20152%20C540%20170%20500%20172%20478%20160%20C454%20174%20404%20174%20384%20160%20C360%20174%20300%20176%20280%20160%20C254%20174%20200%20174%20182%20160%20C158%20174%20108%20172%2092%20158%20Z%22%2F%3E%3C%2Fsvg%3E") center / 100% 100% no-repeat; filter: drop-shadow(0 6px 0 rgba(11, 61, 107, .16)); font-weight: 800; line-height: 1.1; white-space: nowrap; color: #ffd84a; -webkit-text-stroke: 2px #0b3d6b; paint-order: stroke fill;
-      font-size: min(7.2vh, 4rem, 9vw); text-shadow: 0 4px 0 rgba(11, 61, 107, .45), 0 0 18px rgba(11, 61, 107, .35); position: relative; }
+    #start h1 { margin-top: -19vh; padding: 2.6vh 4.4vw 3vh; background: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20600%20170%22%20preserveAspectRatio%3D%22none%22%3E%3Cpath%20fill%3D%22%23fff%22%20d%3D%22M60%20150%20C20%20150%204%20122%2018%20100%20C0%2080%2014%2050%2046%2050%20C50%2022%2090%208%20120%2024%20C140%200%20190%20-2%20214%2018%20C240%20-4%20300%20-2%20318%2020%20C344%20-2%20400%202%20414%2026%20C440%206%20494%2012%20504%2042%20C546%2036%20584%2062%20578%2096%20C598%20116%20588%20150%20552%20152%20C540%20170%20500%20172%20478%20160%20C454%20174%20404%20174%20384%20160%20C360%20174%20300%20176%20280%20160%20C254%20174%20200%20174%20182%20160%20C158%20174%20108%20172%2092%20158%20Z%22%2F%3E%3C%2Fsvg%3E") center / 100% 100% no-repeat; filter: drop-shadow(0 6px 0 rgba(11, 61, 107, .16)); font-weight: 800; line-height: 1.1; white-space: nowrap; color: #ffd84a; -webkit-text-stroke: 2px #0b3d6b; paint-order: stroke fill;
+      font-size: min(8.4vh, 4.6rem, 9.5vw); text-shadow: 0 4px 0 rgba(11, 61, 107, .45), 0 0 18px rgba(11, 61, 107, .35); position: relative; }
     #start .hello { position: absolute; top: 46%; right: 84%; background: var(--paper); color: var(--ink); font-weight: 800; white-space: nowrap;
       font-size: min(3vh, 1.6rem, 4.6vw); line-height: 1.3; padding: 0.8vh 18px; border-radius: var(--r-xl); box-shadow: var(--lift); }
     #start .hello::after { content: ""; position: absolute; right: 26px; bottom: -12px; border: 9px solid transparent;
@@ -159,10 +163,10 @@
     /* a cloud shape: a white body plus round puffs behind the text, all with one soft shadow */
     .puff { position: relative; z-index: 0; background: #fff; border-radius: 999px; filter: drop-shadow(0 6px 0 rgba(11, 61, 107, .16)); }
     .puff > .bp { position: absolute; z-index: -1; background: #fff; border-radius: 50%; }
-    /* the mission cloud that slides in next to her raised left hand */
-    #start .slide { position: absolute; z-index: 3; right: 0.5vw; top: 7vh; width: min(30vw, 400px); min-height: min(42vh, 330px);
+    /* the mission: a wide cloud that slides in over the empty cloud above her head */
+    #start .slide { position: absolute; z-index: 3; left: calc(50vw + var(--hh) * .02); top: .5vh; width: min(46vw, 600px); min-height: min(19vh, 160px);
       display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;
-      padding: min(5.5vh, 46px) min(5.4vw, 66px) min(6.5vh, 54px); background: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20400%20300%22%20preserveAspectRatio%3D%22none%22%3E%3Cpath%20fill%3D%22%23fff%22%20d%3D%22M78%20262%20C30%20262%208%20226%2022%20192%20C2%20168%2010%20124%2046%20116%20C40%2070%2084%2042%20124%2058%20C140%2018%20196%206%20230%2036%20C258%2010%20312%2018%20324%2062%20C368%2062%20392%20102%20378%20140%20C400%20166%20392%20214%20356%20226%20C352%20258%20316%20274%20284%20262%20C262%20288%20214%20292%20192%20268%20C168%20290%20120%20288%20104%20262%20Z%22%2F%3E%3C%2Fsvg%3E") center / 100% 100% no-repeat;
+      padding: min(3.4vh, 30px) min(5vw, 64px) min(4vh, 34px); background: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20400%20300%22%20preserveAspectRatio%3D%22none%22%3E%3Cpath%20fill%3D%22%23fff%22%20d%3D%22M78%20262%20C30%20262%208%20226%2022%20192%20C2%20168%2010%20124%2046%20116%20C40%2070%2084%2042%20124%2058%20C140%2018%20196%206%20230%2036%20C258%2010%20312%2018%20324%2062%20C368%2062%20392%20102%20378%20140%20C400%20166%20392%20214%20356%20226%20C352%20258%20316%20274%20284%20262%20C262%20288%20214%20292%20192%20268%20C168%20290%20120%20288%20104%20262%20Z%22%2F%3E%3C%2Fsvg%3E") center / 100% 100% no-repeat;
       filter: drop-shadow(0 7px 0 rgba(11, 61, 107, .16)) drop-shadow(0 0 14px rgba(255, 255, 255, .9));
       animation: slideIn .9s cubic-bezier(.2, .9, .3, 1.2) .5s both; }
     #start .slide .bp { display: none; }
@@ -171,10 +175,10 @@
 
     /* more drops on clouds, as if they are already up in the sky */
     #start .friends { position: absolute; z-index: 1; pointer-events: none; animation: bob 3.6s ease-in-out infinite; }
-    #start .f1 { left: 3vw; top: 40vh; height: min(19vh, 175px); }
-    #start .f2 { right: 4vw; top: calc(100vh - var(--bottom) - min(11vh, 100px) + 1vh); height: min(11vh, 100px); animation-delay: -1.2s; }
-    #start .f3 { left: 15vw; top: 15vh; height: min(10vh, 90px); opacity: .75; animation-delay: -2.1s; }
-    #start .f4 { right: 4vw; top: 2vh; height: min(9vh, 80px); opacity: .6; animation-delay: -.6s; }
+    #start .f1 { left: 2vw; top: 42vh; height: min(19vh, 175px); }
+    #start .f2 { right: 2vw; top: 36vh; height: min(19vh, 175px); animation-delay: -1.2s; }
+    #start .f3 { left: 13vw; top: 17vh; height: min(13vh, 120px); animation-delay: -2.1s; }
+    #start .f4 { display: none; }
 
     /* the side doors: each button sits in its own small cloud at the top left */
     #start .doors { position: absolute; z-index: 3; left: 1.5vw; top: 3vh; display: flex; gap: 22px; }
@@ -383,6 +387,10 @@
     <svg class="near l1" viewBox="0 0 150 48"><path d="M10 30 q10 -14 20 0 q10 -14 20 0"/><path d="M66 16 q9 -12 18 0 q9 -12 18 0"/><path d="M112 34 q8 -11 16 0 q8 -11 16 0"/></svg>
     <svg class="near l2" viewBox="0 0 150 48"><path d="M10 30 q10 -14 20 0 q10 -14 20 0"/><path d="M66 16 q9 -12 18 0 q9 -12 18 0"/><path d="M112 34 q8 -11 16 0 q8 -11 16 0"/></svg>
     <svg class="near l3" viewBox="0 0 150 48"><path d="M10 30 q10 -14 20 0 q10 -14 20 0"/><path d="M66 16 q9 -12 18 0 q9 -12 18 0"/><path d="M112 34 q8 -11 16 0 q8 -11 16 0"/></svg>
+    <svg class="near r1" viewBox="0 0 150 48"><path d="M10 30 q10 -14 20 0 q10 -14 20 0"/><path d="M66 16 q9 -12 18 0 q9 -12 18 0"/><path d="M112 34 q8 -11 16 0 q8 -11 16 0"/></svg>
+    <svg class="near r2" viewBox="0 0 150 48"><path d="M10 30 q10 -14 20 0 q10 -14 20 0"/><path d="M66 16 q9 -12 18 0 q9 -12 18 0"/><path d="M112 34 q8 -11 16 0 q8 -11 16 0"/></svg>
+    <svg class="near r3" viewBox="0 0 150 48"><path d="M10 30 q10 -14 20 0 q10 -14 20 0"/><path d="M66 16 q9 -12 18 0 q9 -12 18 0"/><path d="M112 34 q8 -11 16 0 q8 -11 16 0"/></svg>
+    <svg class="near l4" viewBox="0 0 150 48"><path d="M10 30 q10 -14 20 0 q10 -14 20 0"/><path d="M66 16 q9 -12 18 0 q9 -12 18 0"/><path d="M112 34 q8 -11 16 0 q8 -11 16 0"/></svg>
   </div>
   <img class="friends f3" src="start-friends.webp" alt="">
   <img class="friends f4" src="start-friends.webp" alt="">
