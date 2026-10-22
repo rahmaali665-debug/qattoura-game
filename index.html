@@ -334,6 +334,22 @@
     .board p { margin: 3px 0; font-size: 1.32rem; line-height: 1.5; border-bottom: 3px dashed #d7ebfa; padding-bottom: 4px; }
     .board p:last-child { border-bottom: 0; }
     .board b { color: var(--orange-deep); }
+    /* the four steps of the condensation card, read right to left then down */
+    .steps4 .sub { text-align: center; font-weight: 800; color: var(--orange-deep); font-size: 1.05rem; margin: 0 0 6px; border: 0; padding: 0; }
+    .steps4 ol { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 1.6vh 1vw; }
+    .steps4 li { position: relative; background: #fff; border: 4px solid #bfe3ff; border-radius: 20px; padding: 7px; text-align: center;
+      display: grid; grid-template-columns: 48% 1fr; grid-template-rows: auto 1fr; column-gap: 8px; align-items: center;
+      box-shadow: 0 5px 0 rgba(11, 61, 107, .12); min-height: 0; }
+    .steps4 li img { grid-row: 1 / 3; width: 100%; aspect-ratio: 4 / 3; height: auto; object-fit: cover; border-radius: 14px; display: block; border: 2px solid #e3f2ff; }
+    .steps4 li b:not(.n) { align-self: end; }
+    .steps4 li span { align-self: start; }
+    .steps4 li b:not(.n) { font-size: 1.25rem; line-height: 1.2; color: var(--orange-deep); }
+    .steps4 li span { font-size: 1.05rem; font-weight: 800; line-height: 1.3; color: var(--ink); }
+    .steps4 .n { position: absolute; top: -12px; right: -10px; width: 2.2em; height: 2.2em; display: grid; place-items: center; border-radius: 50%;
+      font-size: 1.05rem; color: var(--ink) !important; border: 3px solid #fff3a0; z-index: 1;
+      background: radial-gradient(circle at 40% 35%, #fff59a, #ffd400 60%, #f5b800); box-shadow: 0 0 12px 4px rgba(255, 212, 0, .75); }
+    .steps4 .path { margin: 10px auto 0; width: fit-content; text-align: center; font-weight: 800; color: #fff; font-size: 1rem; line-height: 1.4;
+      background: linear-gradient(#ffb13d, #ff8a1f); border: 3px solid #ffe14d; border-radius: 999px; padding: 4px 14px; text-shadow: 0 1px 2px rgba(120, 40, 0, .45); }
     #final { font-size: 1.45rem; font-weight: 800; margin: 6px 0 0; line-height: 1.4; }
     #badges { font-size: 1.35rem; font-weight: 700; line-height: 1.6; }
 
@@ -489,7 +505,7 @@
     #badges .goldmini i { font-style: normal; font-size: 1.9rem; line-height: 1.1; }
     #badges .goldmini small { font-size: .85rem; font-weight: 800; }
     @media (min-aspect-ratio: 5/4) {
-      #end.panel.show { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: auto minmax(0, 1fr) auto auto; gap: 1.6vh 3vw;
+      #end.panel.show { display: grid; grid-template-columns: 1.2fr 1fr; grid-template-rows: auto minmax(0, 1fr) auto auto; gap: 1.6vh 3vw;
         align-items: center; justify-items: center; padding: 2.4vh 3vw 2.6vh; }
       #end > * { margin: 0 !important; }
       #end h1 { grid-column: 1 / -1; font-size: min(6vh, 3.3rem); }
@@ -503,7 +519,7 @@
       #end .board h2 { font-size: min(6.4vh, 3.4rem); margin-bottom: 1.4vh; }
       #end .board p { font-size: min(4.2vh, 2.3rem); line-height: 1.5; border-bottom: 0; padding: .5vh 0; }
       /* Qattoura holds the stars board up on the left, with the golden cards she won on top of it */
-      #end .holder { grid-column: 2; grid-row: 2; align-self: end; height: min(46vh, 400px); aspect-ratio: 1127 / 1300; }
+      #end .holder { grid-column: 2; grid-row: 2; align-self: end; height: min(40vh, 350px); aspect-ratio: 1127 / 1300; }
       .holdq { display: block; height: 100%; width: 100%; object-fit: contain; animation: bob 2.6s ease-in-out infinite; }
       /* the board rests on her raised hands */
       #end .holder .boardwrap { position: absolute; left: -14%; right: -14%; top: auto; bottom: 71%; width: auto; margin: 0; padding: .8vh .8vw 1vh;
@@ -513,8 +529,19 @@
       #end .holder .starsboard.compact .star { padding: .4vh 2px; }
       #end .holder .starsboard.compact .st { width: min(4.4vh, 40px); height: min(4.4vh, 40px); }
       #end .holder .starsboard.compact b { font-size: min(2vh, .95rem); }
+      /* how to earn a missing star is on the stars board screen; here it would push the board over the title */
+      #end .holder .starsboard.compact small { display: none; }
       #end .holder #badges .goldmini { padding: 3px 8px; } #end .holder #badges .goldmini i { font-size: min(3.6vh, 1.7rem); }
       #end #final { grid-column: 1 / -1; grid-row: 3; font-size: min(3.8vh, 2.1rem); }
+      #end .board.steps4 { padding: 3.4vh 1.4vw 1.6vh; display: flex; flex-direction: column; transform: rotate(-1deg); }
+      #end .steps4 h2 { font-size: min(5.4vh, 3rem); margin-bottom: 0; line-height: 1.1; }
+      #end .steps4 .sub { font-size: min(2.6vh, 1.35rem); }
+      #end .steps4 ol { gap: 1.8vh 1vw; }
+      #end .steps4 li img { width: 100%; max-height: 16vh; }
+      #end .steps4 li b:not(.n) { font-size: min(3vh, 1.6rem); }
+      #end .steps4 li span { font-size: min(2.6vh, 1.4rem); }
+      #end .steps4 .path { font-size: min(2.2vh, 1.1rem); padding: .5vh 14px; white-space: nowrap; }
+      #end .steps4 h2 { margin-top: 1.2vh; }
       #end #shopBtn { grid-column: 1 / -1; grid-row: 4; }
     }
     /* ---------- ending buttons and the farewell screen ---------- */
@@ -703,12 +730,17 @@
 <!-- Final result -->
 <div id="end" class="panel">
   <h1>أحسنت! صنعتَ الغيمة</h1>
-  <div class="board">
+  <!-- the condensation card: four steps, each with a picture from the game itself -->
+  <div class="board steps4">
     <h2>التكثف</h2>
-    <p><b>المكان:</b> في الأعلى، في السماء</p>
-    <p><b>السبب:</b> يبرد بخار الماء</p>
-    <p><b>التحول:</b> من بخار ماء (غاز) إلى ماء سائل</p>
-    <p><b>النتيجة:</b> تتشكل الغيوم</p>
+    <p class="sub">ما تعلّمته في رحلتي مع قطّورة</p>
+    <ol>
+      <li><b class="n">١</b><img src="endcard/1-up.webp" alt="قطّورة تصعد وتجمع أسهم الصعود"><b>المكان</b><span>في الأعلى، في السماء</span></li>
+      <li><b class="n">٢</b><img src="endcard/2-cold.webp" alt="قطّورة تجمع بلورات البرودة"><b>السبب</b><span>يبرد بخار الماء</span></li>
+      <li><b class="n">٣</b><img src="endcard/3-drop.webp" alt="قطّورة صارت قطرة ماء"><b>التحول</b><span>من بخار ماء (غاز) إلى ماء سائل</span></li>
+      <li><b class="n">٤</b><img src="endcard/4-cloud.webp" alt="قطّورة فوق الغيمة"><b>النتيجة</b><span>تتشكل الغيوم</span></li>
+    </ol>
+    <p class="path">يصعد بخار الماء ← يبرد ← يصير قطرات ماء ← تتشكل الغيمة ☁️</p>
   </div>
   <div class="holder">
     <img class="holdq" src="start-hero-clean.webp" alt="قطّورة ترفع لوحة النجوم">
@@ -794,6 +826,6 @@
   <div class="shopcloud" aria-hidden="true"></div>
 </div>
 
-<script type="module" src="game.js?v=13"></script>
+<script type="module" src="game.js?v=14"></script>
 </body>
 </html>
