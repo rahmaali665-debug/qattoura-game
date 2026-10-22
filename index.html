@@ -112,7 +112,7 @@
     #start { padding: 0; overflow: hidden; color: var(--ink);
       background: linear-gradient(#5ab9f5 0%, #8fd3ff 45%, #cdeeff 100%);
       /* --bottom: room for the steps row and the start button; --hh: height of the Qattoura picture */
-      --bottom: min(31vh, 250px); --hh: min(calc(100vh - var(--bottom) - 5vh), 64vw); }
+      --bottom: min(31vh, 250px); --hh: min(calc(100vh - var(--bottom) + 3vh), 68vw); }
     #start > * { margin: 0; }
 
     /* far-away sky: soft clouds drifting and small birds crossing slowly */
@@ -131,19 +131,25 @@
     .skyfx .birds.b2 { top: 22%; width: 170px; height: 54px; animation-duration: 46s; animation-delay: -27s; }
     .skyfx .birds.b3 { top: 5%; width: 140px; height: 44px; animation-duration: 58s; animation-delay: -40s; }
     .skyfx .birds.b4 { top: 33%; width: 190px; height: 60px; animation-duration: 40s; animation-delay: -18s; }
-    .skyfx .birds path { fill: none; stroke: #1f3f66; stroke-width: 3.6; stroke-linecap: round; stroke-linejoin: round; opacity: .85;
+    .skyfx .birds path, .skyfx .near path { fill: none; stroke: #1f3f66; stroke-width: 3.6; stroke-linecap: round; stroke-linejoin: round; opacity: .85;
       animation: flap .55s ease-in-out infinite alternate; transform-origin: center; transform-box: fill-box; }
-    .skyfx .birds path:nth-child(2n) { animation-delay: .18s; }
+    .skyfx .birds path:nth-child(2n), .skyfx .near path:nth-child(2n) { animation-delay: .18s; }
     .skyfx .birds path:nth-child(3n) { animation-delay: .36s; }
     @keyframes flap { to { transform: scaleY(.4); } }
     @keyframes flyBirds { from { left: 110%; } to { left: -20%; } }
+    /* birds that circle near the drop clouds on the left */
+    .skyfx .near { position: absolute; width: 150px; height: 48px; animation: hover 7s ease-in-out infinite; }
+    .skyfx .near.l1 { left: 2vw; top: 30vh; }
+    .skyfx .near.l2 { left: 13vw; top: 7vh; width: 120px; height: 38px; animation-delay: -2.5s; }
+    .skyfx .near.l3 { left: 19vw; top: 44vh; width: 110px; height: 36px; animation-delay: -4.5s; }
+    @keyframes hover { 0%, 100% { transform: translate(0, 0); } 33% { transform: translate(40px, -14px); } 66% { transform: translate(-20px, 8px); } }
 
     /* Qattoura in the middle on her cloud, with the title just under the cloud */
-    #start .center { position: absolute; left: 50%; top: 3vh; transform: translateX(-50%); z-index: 2;
+    #start .center { position: absolute; left: 50%; top: 0; transform: translateX(-50%); z-index: 2;
       display: flex; flex-direction: column; align-items: center; pointer-events: none; }
     #start .hero { height: var(--hh); display: block; animation: bob 3s ease-in-out infinite; }
     @keyframes bob { 50% { transform: translateY(-8px); } }
-    #start h1 { margin-top: -9vh; font-weight: 800; line-height: 1.1; white-space: nowrap; color: #ffd84a; -webkit-text-stroke: 2px #0b3d6b; paint-order: stroke fill;
+    #start h1 { margin-top: -15vh; padding: 2.2vh 3.4vw 2.6vh; background: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20600%20170%22%20preserveAspectRatio%3D%22none%22%3E%3Cpath%20fill%3D%22%23fff%22%20d%3D%22M60%20150%20C20%20150%204%20122%2018%20100%20C0%2080%2014%2050%2046%2050%20C50%2022%2090%208%20120%2024%20C140%200%20190%20-2%20214%2018%20C240%20-4%20300%20-2%20318%2020%20C344%20-2%20400%202%20414%2026%20C440%206%20494%2012%20504%2042%20C546%2036%20584%2062%20578%2096%20C598%20116%20588%20150%20552%20152%20C540%20170%20500%20172%20478%20160%20C454%20174%20404%20174%20384%20160%20C360%20174%20300%20176%20280%20160%20C254%20174%20200%20174%20182%20160%20C158%20174%20108%20172%2092%20158%20Z%22%2F%3E%3C%2Fsvg%3E") center / 100% 100% no-repeat; filter: drop-shadow(0 6px 0 rgba(11, 61, 107, .16)); font-weight: 800; line-height: 1.1; white-space: nowrap; color: #ffd84a; -webkit-text-stroke: 2px #0b3d6b; paint-order: stroke fill;
       font-size: min(7.2vh, 4rem, 9vw); text-shadow: 0 4px 0 rgba(11, 61, 107, .45), 0 0 18px rgba(11, 61, 107, .35); position: relative; }
     #start .hello { position: absolute; top: 46%; right: 84%; background: var(--paper); color: var(--ink); font-weight: 800; white-space: nowrap;
       font-size: min(3vh, 1.6rem, 4.6vw); line-height: 1.3; padding: 0.8vh 18px; border-radius: var(--r-xl); box-shadow: var(--lift); }
@@ -154,23 +160,14 @@
     .puff { position: relative; z-index: 0; background: #fff; border-radius: 999px; filter: drop-shadow(0 6px 0 rgba(11, 61, 107, .16)); }
     .puff > .bp { position: absolute; z-index: -1; background: #fff; border-radius: 50%; }
     /* the mission cloud that slides in next to her raised left hand */
-    #start .slide { position: absolute; z-index: 3; right: 1.5vw; top: 12vh; width: min(31vw, 400px);
-      padding: 3vh 34px 2.6vh; text-align: center; border-radius: 90px;
+    #start .slide { position: absolute; z-index: 3; right: 0.5vw; top: 7vh; width: min(30vw, 400px); min-height: min(42vh, 330px);
+      display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;
+      padding: min(5.5vh, 46px) min(5.4vw, 66px) min(6.5vh, 54px); background: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20400%20300%22%20preserveAspectRatio%3D%22none%22%3E%3Cpath%20fill%3D%22%23fff%22%20d%3D%22M78%20262%20C30%20262%208%20226%2022%20192%20C2%20168%2010%20124%2046%20116%20C40%2070%2084%2042%20124%2058%20C140%2018%20196%206%20230%2036%20C258%2010%20312%2018%20324%2062%20C368%2062%20392%20102%20378%20140%20C400%20166%20392%20214%20356%20226%20C352%20258%20316%20274%20284%20262%20C262%20288%20214%20292%20192%20268%20C168%20290%20120%20288%20104%20262%20Z%22%2F%3E%3C%2Fsvg%3E") center / 100% 100% no-repeat;
+      filter: drop-shadow(0 7px 0 rgba(11, 61, 107, .16)) drop-shadow(0 0 14px rgba(255, 255, 255, .9));
       animation: slideIn .9s cubic-bezier(.2, .9, .3, 1.2) .5s both; }
-    /* puffs are sized by the cloud's width so the cloud stays wide and low */
-    #start .slide .bp { aspect-ratio: 1; height: auto; }
-    #start .slide .b1 { left: 5%; top: -22%; width: 28%; }
-    #start .slide .b2 { left: 30%; top: -32%; width: 36%; }
-    #start .slide .b3 { right: 6%; top: -18%; width: 26%; }
-    #start .slide .b4 { left: -5%; top: 22%; width: 18%; }
-    #start .slide .b5 { right: -5%; top: 26%; width: 18%; }
-    #start .slide .b6 { left: 18%; bottom: -14%; width: 24%; }
-    #start .slide .b7 { right: 20%; bottom: -12%; width: 26%; }
-    /* two little puffs lead from her hand to the cloud, like a thought cloud */
-    #start .slide .t1 { left: -9%; top: 2%; width: 7%; }
-    #start .slide .t2 { left: -15%; top: -8%; width: 4.5%; }
-    #start .slide .lead { font-size: min(2.9vh, 1.5rem, 4.6vw); font-weight: 800; line-height: 1.5; color: var(--ink); }
-    #start .slide .promise { margin-top: .8vh; width: auto; border: 3px dashed #ffb13d; font-size: min(2.1vh, 1.08rem, 3.6vw); padding: .5vh 10px; }
+    #start .slide .bp { display: none; }
+    #start .slide .lead { font-size: min(3.1vh, 1.6rem, 4.6vw); font-weight: 800; line-height: 1.45; color: var(--ink); margin: 0; }
+    #start .slide .promise { margin: 1vh 0 0; width: auto; border: 0; background: #fff4d6; border-radius: 16px; color: #a04f00; font-size: min(2.1vh, 1.08rem, 3.6vw); padding: .6vh 12px; line-height: 1.45; }
 
     /* more drops on clouds, as if they are already up in the sky */
     #start .friends { position: absolute; z-index: 1; pointer-events: none; animation: bob 3.6s ease-in-out infinite; }
@@ -238,6 +235,8 @@
       #start .slide .b1 { width: 22%; top: -16%; } #start .slide .b2 { width: 28%; top: -24%; } #start .slide .b3 { width: 20%; top: -12%; }
       #start h1 { margin-top: -4vh; }
       #start .center { z-index: 3; } #start .slide { z-index: 2; }
+      #start .slide { min-height: 0; top: calc(10vh + var(--hh) + 5vh); padding: 3.2vh 10vw 3.8vh; }
+      #start .slide .promise { display: none; }
       #start .how span { margin-top: 1.5vh; }
       #start .how span .p1 { top: -24%; width: 22%; } #start .how span .p2 { top: -32%; width: 28%; } #start .how span .p3 { top: -22%; width: 20%; }
       #start .door .mini { white-space: nowrap; font-size: min(1.8vh, 3.4vw); }
@@ -381,6 +380,9 @@
     <svg class="birds b2" viewBox="0 0 220 70"><path d="M10 30 q10 -14 20 0 q10 -14 20 0"/><path d="M66 46 q9 -12 18 0 q9 -12 18 0"/><path d="M118 20 q8 -11 16 0 q8 -11 16 0"/><path d="M164 38 q7 -10 14 0 q7 -10 14 0"/></svg>
     <svg class="birds b3" viewBox="0 0 220 70"><path d="M14 36 q10 -14 20 0 q10 -14 20 0"/><path d="M80 22 q9 -12 18 0 q9 -12 18 0"/><path d="M140 40 q8 -11 16 0 q8 -11 16 0"/></svg>
     <svg class="birds b4" viewBox="0 0 220 70"><path d="M10 40 q10 -14 20 0 q10 -14 20 0"/><path d="M60 24 q9 -12 18 0 q9 -12 18 0"/><path d="M104 44 q8 -11 16 0 q8 -11 16 0"/><path d="M146 28 q7 -10 14 0 q7 -10 14 0"/><path d="M184 48 q6 -8 12 0 q6 -8 12 0"/></svg>
+    <svg class="near l1" viewBox="0 0 150 48"><path d="M10 30 q10 -14 20 0 q10 -14 20 0"/><path d="M66 16 q9 -12 18 0 q9 -12 18 0"/><path d="M112 34 q8 -11 16 0 q8 -11 16 0"/></svg>
+    <svg class="near l2" viewBox="0 0 150 48"><path d="M10 30 q10 -14 20 0 q10 -14 20 0"/><path d="M66 16 q9 -12 18 0 q9 -12 18 0"/><path d="M112 34 q8 -11 16 0 q8 -11 16 0"/></svg>
+    <svg class="near l3" viewBox="0 0 150 48"><path d="M10 30 q10 -14 20 0 q10 -14 20 0"/><path d="M66 16 q9 -12 18 0 q9 -12 18 0"/><path d="M112 34 q8 -11 16 0 q8 -11 16 0"/></svg>
   </div>
   <img class="friends f3" src="start-friends.webp" alt="">
   <img class="friends f4" src="start-friends.webp" alt="">
