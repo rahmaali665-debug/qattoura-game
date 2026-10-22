@@ -411,31 +411,49 @@
       font-size: min(3.6vh, 2rem, 5.6vw); padding: 1vh 22px; border-radius: var(--r-xl); box-shadow: var(--lift); white-space: nowrap;
       animation: joyPop 1.6s ease-in-out infinite; pointer-events: none; }
     @keyframes joyPop { 0%, 100% { transform: translateX(-50%) scale(1); } 50% { transform: translateX(-50%) scale(1.08); } }
-    /* wide screens: the shop counter fills the right half under a big striped awning; Qattoura stands big on the left */
+    /* the stall wrapper only matters on wide screens; on a phone the shop keeps its stacked layout */
+    .stall { display: contents; }
+    .roof, .shopcloud, .shopsky { display: none; }
+    /* wide screens: a real shop in the sky. The stall stands on a big cloud on the right, under a striped awning
+       on wooden poles; Qattoura stands big on her own cloud on the left; birds fly and clouds drift behind */
     @media (min-aspect-ratio: 5/4) {
-      #shop.panel.show { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr); align-items: stretch; justify-items: stretch; }
+      #shop.panel.show { display: block; }
       #shop > * { margin: 0 !important; }
-      #shop .shophead { grid-column: 1 / -1; padding: 1.6vh 2vw 1.2vh; }
+      .shopsky { display: block; z-index: 0; }
+      .shopsky .cl { opacity: .55; }
+      .shopsky .a { top: 4%; } .shopsky .b { top: 18%; } .shopsky .c { top: 70%; }
+      #shop .shophead { position: absolute; z-index: 4; top: 1.6vh; left: 2vw; right: 2vw; width: auto; padding: 0; }
       #shop .sign { font-size: min(5.4vh, 3rem); padding: .2vh 3vw; border-width: 6px; }
       #wallet { font-size: min(4.8vh, 2.6rem); padding: 0 2vw; border-width: 6px; }
       #shop .stage { display: none; }
-      .joy { left: 25%; top: 13vh; font-size: min(4.2vh, 2.3rem); }
-      #sheet { grid-column: 1; grid-row: 2; max-width: none; width: auto; height: auto; min-height: 0; align-self: stretch; margin-inline-start: 2vw !important; border-width: 8px; }
-      .awning { height: 10vh; flex: 0 0 auto;
-        background: radial-gradient(circle at 50% 0, transparent 0) ,
-          repeating-linear-gradient(90deg, #ff5a4d 0 7%, #fff 7% 14%);
-        border-bottom: 0; border-radius: 26px 26px 0 0; position: relative; }
-      .awning::after { content: ""; position: absolute; left: 0; right: 0; bottom: -3.4vh; height: 3.4vh;
-        background: radial-gradient(circle at 50% 0, #ff5a4d 62%, transparent 64%) 0 0 / 7% 100% repeat-x,
-                    radial-gradient(circle at 50% 0, #fff 62%, transparent 64%) 3.5% 0 / 7% 100% repeat-x;
-        filter: drop-shadow(0 4px 0 rgba(150, 40, 30, .25)); }
+      .joy { left: 25%; top: auto; bottom: 5vh; font-size: min(4.2vh, 2.3rem); z-index: 4; }
+      .stall { display: flex; flex-direction: column; position: absolute; z-index: 2; right: 3vw; top: 11vh; bottom: 12vh; width: 45vw; }
+      /* two wooden poles hold the awning up */
+      .stall::before, .stall::after { content: ""; position: absolute; z-index: 0; top: 4vh; bottom: 2vh; width: 1.4vw; min-width: 12px; border-radius: 8px;
+        background: linear-gradient(90deg, #6e4520, #b9824a 45%, #7a4c22); }
+      .stall::before { right: -1vw; } .stall::after { left: -1vw; }
+      .roof { display: block; position: relative; z-index: 3; flex: 0 0 auto; height: 12vh; margin: 0 -3vw !important;
+        border-radius: 22px 22px 6px 6px; border-top: 1.4vh solid #8a5a2b;
+        background: linear-gradient(rgba(255, 255, 255, .25), rgba(0, 0, 0, .14)), repeating-linear-gradient(90deg, #ff4d42 0 6%, #fffaf0 6% 12%);
+        box-shadow: 0 8px 14px rgba(11, 61, 107, .25); }
+      /* the scalloped edge of the awning */
+      .roof::after { content: ""; position: absolute; left: 0; right: 0; bottom: -3.6vh; height: 3.6vh;
+        background: radial-gradient(circle at 50% 0, #e8392f 66%, transparent 68%) 0 0 / 12% 100% repeat-x,
+                    radial-gradient(circle at 50% 0, #f4efe4 66%, transparent 68%) 6% 0 / 12% 100% repeat-x;
+        filter: drop-shadow(0 5px 0 rgba(150, 40, 30, .22)); }
+      #sheet { position: relative; z-index: 1; flex: 1 1 auto; max-width: none; width: auto; min-height: 0; border: 8px solid var(--wood);
+        border-top: 0; border-radius: 0 0 26px 26px; padding-bottom: 11vh; box-shadow: 0 10px 22px rgba(11, 61, 107, .2); }
+      #sheet .awning { display: none; }
+      /* the big cloud the whole stall stands on */
+      .shopcloud { display: block; position: absolute; z-index: 3; right: -2vw; bottom: -2vh; width: 55vw; height: 26vh; pointer-events: none;
+        background: url(start-cloud.webp) center / 100% 100% no-repeat; filter: drop-shadow(0 6px 10px rgba(11, 61, 107, .18)); }
       .tabs { padding: 5vh 1.4vw 0; gap: 1vw; }
-      .tab { font-size: min(3.4vh, 1.9rem); min-height: 7vh; }
-      #shopMsg { font-size: min(3.2vh, 1.8rem); }
+      .tab { font-size: min(3.6vh, 2rem); min-height: 7vh; }
+      #shopMsg { font-size: min(3.4vh, 1.9rem); }
       .goods { gap: 1.4vw; padding: .6vh 1.4vw 1vh; }
       .good .ic { width: min(15vh, 130px); height: min(15vh, 130px); }
-      .good .nm { font-size: min(3.6vh, 2rem); }
-      .good .pr { font-size: min(3.2vh, 1.8rem); }
+      .good .nm { font-size: min(3.8vh, 2.1rem); }
+      .good .pr { font-size: min(3.4vh, 1.9rem); }
       #shop .btn { font-size: min(3.8vh, 2.1rem); }
     }
   </style>
@@ -558,12 +576,21 @@
 
 <!-- The cloud shop: coins buy things that Qattoura wears -->
 <div id="shop" class="panel">
+  <div class="skyfx shopsky" aria-hidden="true">
+    <i class="cl a"></i><i class="cl b"></i><i class="cl c"></i>
+    <svg class="near l1" viewBox="0 0 150 48"><path d="M10 30 q10 -14 20 0 q10 -14 20 0"/><path d="M66 16 q9 -12 18 0 q9 -12 18 0"/><path d="M112 34 q8 -11 16 0 q8 -11 16 0"/></svg>
+    <svg class="near l2" viewBox="0 0 150 48"><path d="M10 30 q10 -14 20 0 q10 -14 20 0"/><path d="M66 16 q9 -12 18 0 q9 -12 18 0"/><path d="M112 34 q8 -11 16 0 q8 -11 16 0"/></svg>
+    <svg class="near r1" viewBox="0 0 150 48"><path d="M10 30 q10 -14 20 0 q10 -14 20 0"/><path d="M66 16 q9 -12 18 0 q9 -12 18 0"/><path d="M112 34 q8 -11 16 0 q8 -11 16 0"/></svg>
+    <svg class="birds b1" viewBox="0 0 220 70"><path d="M10 34 q10 -14 20 0 q10 -14 20 0"/><path d="M62 18 q9 -12 18 0 q9 -12 18 0"/><path d="M110 40 q8 -11 16 0 q8 -11 16 0"/></svg>
+  </div>
   <div class="shophead">
     <div class="sign">متجر الغيمة</div>
     <div id="wallet"><span id="walletNum">٠</span> <i class="coin"></i></div>
   </div>
   <div class="stage"></div>
   <div class="joy">😄 أنا فرحة بما أنجزت!</div>
+  <div class="stall">
+  <div class="roof" aria-hidden="true"></div>
   <div id="sheet">
     <div class="awning"></div>
     <div class="tabs">
@@ -576,8 +603,10 @@
     <button id="againBtn" class="btn" type="button">🔄 العب مرة أخرى لتجمع قطعاً أكثر</button>
     <button id="shopBack" class="mini" type="button" hidden>رجوع إلى البداية</button>
   </div>
+  </div>
+  <div class="shopcloud" aria-hidden="true"></div>
 </div>
 
-<script type="module" src="game.js?v=7"></script>
+<script type="module" src="game.js?v=8"></script>
 </body>
 </html>

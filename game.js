@@ -65,7 +65,7 @@ const camera = new THREE.PerspectiveCamera(55, 1, 0.1, 100);
 const CAM_Y = 1.2, CAM_Z = 9.5;
 const SHOP_Y = -2.62, SHOP_Z = 5.9;           // close-up that keeps Qattoura in the upper part of the screen
 // on a wide screen the shop counter fills the right half and Qattoura stands big in the middle of the left half
-const SHOP_WIDE_Y = -1.15, SHOP_WIDE_Z = 3.7;
+const SHOP_WIDE_Y = -1.25, SHOP_WIDE_Z = 3.3;
 function shopView() {
   const wide = camera.aspect >= 1.25;
   const z = wide ? SHOP_WIDE_Z : SHOP_Z;
