@@ -368,7 +368,7 @@ function addScore(n) {
   $('scoreNum').textContent = ar(S.score);
   const el = $('score'); el.classList.remove('bump'); void el.offsetWidth; el.classList.add('bump');
 }
-const PANELS = ['start', 'story', 'gate', 'card', 'end', 'shop', 'boardPanel'];
+const PANELS = ['start', 'story', 'gate', 'card', 'end', 'shop', 'boardPanel', 'bye'];
 function showPanel(id) { PANELS.forEach((p) => $(p).classList.toggle('show', p === id)); }
 function setSky(n) { document.body.dataset.sky = String(n); }
 function hud() {
@@ -598,6 +598,16 @@ function openShop(from) {
   renderer.render(scene, camera);
 }
 $('shopBtn').addEventListener('click', () => openShop('end'));
+
+// the pupil chooses to end the journey: Qattoura thanks them, recalls the three key ideas and tells them what to do next
+function openBye() {
+  S.mode = 'bye';
+  const won = S.badges.map((b) => '<span class="goldmini"><i>' + b.icon + '</i><small>' + b.name.replace('بطاقة ', '').replace(' الذهبية', '') + '</small></span>').join('');
+  $('byeWon').innerHTML = (won ? 'بطاقاتك الذهبية: ' + won + ' · ' : '') + 'قطعك النقدية: ' + ar(state.bank) + ' <i class="coin"></i>';
+  showPanel('bye');
+}
+$('byeBtn').addEventListener('click', openBye);
+$('byeBtn2').addEventListener('click', openBye);
 $('miniShop').addEventListener('click', () => openShop('start'));
 $('shopBack').addEventListener('click', () => { S.mode = 'start'; showPanel('start'); });
 $('tabGoods').addEventListener('click', () => shopTab('goods'));
