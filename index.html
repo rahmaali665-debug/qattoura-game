@@ -303,6 +303,28 @@
     .gold h2 { color: #7a4b00; font-size: 1.45rem; margin: 6px 0 2px; line-height: 1.5; }
     .gold .label { font-size: 1.25rem; margin-top: 6px; }
     .gold .phrase { font-size: 1.9rem; font-weight: 800; line-height: 1.45; }
+    /* big gate and golden cards: a large question and two big choices, each with a picture over its words */
+    #gate .box, #card .box { width: min(94vw, 900px); padding: 2.4vh 2.4vw 3vh; }
+    #gate .box h2 { font-size: min(3.4vh, 1.8rem, 5vw); }
+    #gate .box .q { font-size: min(5.4vh, 3rem, 7vw); margin: .6vh 0 2vh; }
+    #gate .opts { grid-template-columns: 1fr 1fr; gap: 2.4vw; }
+    #gate .opt { display: flex; flex-direction: column; align-items: center; gap: 1.2vh; padding: 1.6vh 1.2vw 1.8vh; }
+    #gate .opt .pic { width: min(30vh, 34vw, 280px); aspect-ratio: 1; border-radius: var(--r-lg); overflow: hidden; display: grid; place-items: center;
+      border: 4px solid #fff; box-shadow: var(--lift-sm); font-size: min(9vh, 11vw, 84px); line-height: 1; direction: rtl; background: #fff; }
+    #gate .opt .pic img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    #gate .opt .pic.n2, #gate .opt .pic.n3 { display: flex; flex-wrap: nowrap; justify-content: center; align-items: center; gap: 4%; }
+    #gate .opt .pic i { font-style: normal; }
+    #gate .opt .pic.n3 i { font-size: .9em; }
+    #gate .opt .pic.cold { background: linear-gradient(#e6f6ff, #9fd8ff); }
+    #gate .opt .pic.hot { background: linear-gradient(#fff3d6, #ffb36b); }
+    #gate .opt .tx { font-size: min(4.4vh, 2.4rem, 6vw); font-weight: 800; line-height: 1.3; }
+    #hintLine.fb { font-size: min(3vh, 1.6rem, 4.6vw); }
+    #card .gold .badge { font-size: min(14vh, 7rem); }
+    #card .gold h2 { font-size: min(4.4vh, 2.4rem, 6vw); }
+    #card .gold .label { font-size: min(4vh, 2.1rem, 5.6vw); }
+    #card .gold .phrase { font-size: min(6vh, 3.3rem, 7.6vw); }
+    #card .btn { font-size: min(4.4vh, 2.3rem, 6.4vw); }
+    @media (max-aspect-ratio: 3/4) { #gate .opts { gap: 3vw; } #gate .opt .pic { width: 38vw; } }
 
     /* ---------- final result ---------- */
     #end h1 { margin: 0 0 4px; font-size: 2.1rem; line-height: 1.3; font-weight: 800; text-shadow: 0 4px 0 rgba(11, 61, 107, .28); }
@@ -523,6 +545,6 @@
   </div>
 </div>
 
-<script type="module" src="game.js?v=2"></script>
+<script type="module" src="game.js?v=4"></script>
 </body>
 </html>

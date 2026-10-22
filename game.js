@@ -21,6 +21,7 @@ const STATIONS = [
     mission: (n, need) => `اجمع أسهم الصعود: ${ar(n)} / ${ar(need)}`,
     hello: 'أنا بخار ماء! ساعدني لأصعد إلى الأعلى',
     gate: { title: 'بوابة المحطة الأولى', q: 'أين يحدث التكثف؟', right: 'في الأعلى، في السماء', wrong: 'عند سطح البحر',
+            rightPic: { img: 'gate/sky.webp' }, wrongPic: { img: 'gate/sea.webp' },
             hint: 'تذكّر: إلى أين صعدنا الآن؟',
             why: 'عند سطح البحر يحدث التبخر. أما التكثف فيحدث في الأعلى، في السماء.' },
     card: { label: 'المكان', phrase: 'في الأعلى، في السماء' },
@@ -31,6 +32,7 @@ const STATIONS = [
     mission: (n, need) => `برّد بخار الماء: ${ar(n)} / ${ar(need)}`,
     hello: 'الهواء هنا بارد! اجمع بلورات البرودة وابتعد عن الحرارة',
     gate: { title: 'بوابة المحطة الثانية', q: 'يتكثف بخار الماء عندما…', right: 'يبرد', wrong: 'يسخن',
+            rightPic: { icons: ['❄️', '🥶'], tone: 'cold' }, wrongPic: { icons: ['☀️', '🥵'], tone: 'hot' },
             hint: 'تذكّر: ماذا جمعنا حتى انخفض مقياس الحرارة؟',
             why: 'التسخين يحوّل الماء السائل إلى بخار ماء، وهذا هو التبخر. أما التكثف فيحدث عندما يبرد بخار الماء.' },
     card: { label: 'السبب', phrase: 'يبرد بخار الماء' },
@@ -41,6 +43,7 @@ const STATIONS = [
     mission: (n, need) => `اجمع قطرات الماء: ${ar(n)} / ${ar(need)}`,
     hello: 'بردتُ فتحوّلتُ إلى قطرة ماء سائلة! هذا هو التكثف',
     gate: { title: 'بوابة المحطة الثالثة', q: 'في التكثف يتحول الماء…', right: 'من غاز إلى سائل', wrong: 'من سائل إلى غاز',
+            rightPic: { icons: ['💨', '⬅️', '💧'], tone: 'cold' }, wrongPic: { icons: ['💧', '⬅️', '💨'], tone: 'hot' },
             hint: 'تذكّر: كنتُ بخار ماء، وماذا صرتُ بعد أن بردت؟',
             why: 'من سائل إلى غاز هو التبخر. أما في التكثف فيتحول بخار الماء (غاز) إلى ماء سائل.' },
     card: { label: 'التحول', phrase: 'من بخار ماء (غاز) إلى ماء سائل' },
@@ -388,11 +391,17 @@ function missionDone() {
   $('gateQ').textContent = g.q;
   $('hintLine').textContent = ''; $('hintLine').className = '';
   const box = $('gateOpts'); box.innerHTML = '';
-  const opts = [{ t: g.right, ok: true }, { t: g.wrong, ok: false }];
+  const opts = [{ t: g.right, ok: true, pic: g.rightPic }, { t: g.wrong, ok: false, pic: g.wrongPic }];
   if (Math.random() < 0.5) { opts.reverse(); }
   opts.forEach((o) => {
     const b = document.createElement('button');
-    b.type = 'button'; b.className = 'opt'; b.textContent = o.t;
+    b.type = 'button'; b.className = 'opt';
+    // a picture on every choice, so a pupil who cannot read yet can still choose by the picture
+    const pic = document.createElement('span'); pic.className = 'pic' + (o.pic && o.pic.tone ? ' ' + o.pic.tone : '');
+    if (o.pic && o.pic.img) { const im = document.createElement('img'); im.src = o.pic.img; im.alt = ''; pic.appendChild(im); }
+    else if (o.pic && o.pic.icons) { pic.classList.add('n' + o.pic.icons.length); o.pic.icons.forEach((ic) => { const s = document.createElement('i'); s.textContent = ic; pic.appendChild(s); }); }
+    const tx = document.createElement('span'); tx.className = 'tx'; tx.textContent = o.t;
+    b.append(pic, tx);
     b.addEventListener('click', () => answer(o.ok, b));
     box.appendChild(b);
   });
