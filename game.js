@@ -479,7 +479,7 @@ $('cardBtn').addEventListener('click', () => {
 
 function begin() {
   wakeAudio();
-  S.score = 0; S.badges = []; S.targetX = 0; S.firstTries = 0; S.heatHits = 0; S.cloudHits = 0;
+  S.score = 0; S.badges = []; S.targetX = 0; S.firstTries = 0; S.heatHits = 0; S.cloudHits = 0; S.grow = 0.5;
   player.position.x = 0; player.rotation.y = 0;
   bigCloud.scale.setScalar(0.001);
   setPlayerOpacity(0.38);
@@ -669,6 +669,12 @@ function update(dt) {
   player.rotation.z = (player.position.x - S.targetX) * 0.12;
   player.rotation.y += ((shop ? Math.sin(S.time * 0.9) * 0.75 : 0) - player.rotation.y) * Math.min(1, dt * 6);
 
+  // she starts small and grows with every item she collects and every station she passes, until the cloud forms
+  const st0 = STATIONS[Math.min(S.station, 2)];
+  const prog = S.mode === 'end' ? 1 : Math.min(1, (S.station + Math.min(1, S.got / st0.need)) / 3);
+  const growTo = 0.5 + 0.6 * prog;
+  S.grow = (S.grow || growTo) + (growTo - (S.grow || growTo)) * Math.min(1, dt * 4);
+
   // how visible she is: faint vapour, clearer as she cools, a solid drop after the change
   let op = 0.38;
   if (S.station === 1) { op = 0.38 + 0.2 * (S.got / STATIONS[1].need); }
@@ -676,9 +682,10 @@ function update(dt) {
     S.changeT = Math.min(1, (S.changeT || 0) + dt / 1.5);
     op = 0.58 + 0.42 * S.changeT;
     const pulse = 1 + 0.25 * Math.sin(S.changeT * Math.PI);
-    player.scale.setScalar(pulse);
-  } else { player.scale.setScalar(1); }
-  if (shop || S.mode === 'end' || S.mode === 'card' && S.station === 2) { op = 1; player.scale.setScalar(1); }
+    player.scale.setScalar(pulse * S.grow);
+  } else { player.scale.setScalar(S.grow); }
+  if (S.mode === 'end' || S.mode === 'card' && S.station === 2) { op = 1; player.scale.setScalar(S.grow); }
+  if (shop) { op = 1; player.scale.setScalar(1); }
   setPlayerOpacity(op);
 
   // the cloud she builds in the last station; in the shop it stays behind her like a backdrop

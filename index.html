@@ -57,14 +57,14 @@
       display: grid; place-items: center; font-style: normal; font-weight: 800; font-size: 1.25rem; }
     #steps i.on { background: var(--gold); box-shadow: 0 0 0 3px #fff; }
     #steps i.done { background: var(--mint); color: #fff; }
-    #mission { position: absolute; top: 68px; left: 50%; transform: translateX(-50%); font-size: 1.3rem; width: max-content; max-width: 94vw; text-align: center; }
+    #mission { position: absolute; top: 68px; left: 50%; transform: translateX(-50%); font-size: min(3.4vh, 1.9rem, 5vw); width: max-content; max-width: 94vw; text-align: center; }
     #thermo { position: absolute; top: 132px; inset-inline-end: 14px; width: 36px; height: 200px; background: rgba(255, 255, 255, .94);
       border-radius: 18px; padding: 5px; box-shadow: var(--lift-sm); display: none; }
     #thermo b { position: absolute; left: 5px; right: 5px; bottom: 5px; border-radius: 14px; height: 100%;
       background: linear-gradient(#ff5a36, #ffb13d); transition: height .3s, background .3s; }
     #thermo span { position: absolute; top: -30px; left: 50%; transform: translateX(-50%); font-size: 1.4rem; }
-    #bubble { position: absolute; bottom: 25%; left: 50%; transform: translateX(-50%); background: #fff; color: var(--ink);
-      font-weight: 700; font-size: 1.3rem; line-height: 1.6; padding: 10px 20px; border-radius: var(--r-lg);
+    #bubble { position: absolute; bottom: 36%; left: 50%; transform: translateX(-50%); background: #fff; color: var(--ink);
+      font-weight: 800; font-size: min(4vh, 2.2rem, 5.6vw); line-height: 1.5; padding: 1.2vh 26px; border-radius: var(--r-lg);
       box-shadow: var(--lift); opacity: 0; transition: opacity .25s; width: max-content; max-width: 88vw; text-align: center; }
     #bubble.show { opacity: 1; }
     #swipe { position: absolute; bottom: 14px; left: 50%; transform: translateX(-50%); font-size: 1.1rem; white-space: nowrap; }
@@ -545,6 +545,6 @@
   </div>
 </div>
 
-<script type="module" src="game.js?v=4"></script>
+<script type="module" src="game.js?v=5"></script>
 </body>
 </html>
