@@ -155,7 +155,7 @@
     @keyframes bob { 50% { transform: translateY(-8px); } }
     #start h1 { margin-top: -22vh; padding: 2.6vh 4.4vw 3vh; background: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20600%20170%22%20preserveAspectRatio%3D%22none%22%3E%3Cpath%20fill%3D%22%23fff%22%20d%3D%22M60%20150%20C20%20150%204%20122%2018%20100%20C0%2080%2014%2050%2046%2050%20C50%2022%2090%208%20120%2024%20C140%200%20190%20-2%20214%2018%20C240%20-4%20300%20-2%20318%2020%20C344%20-2%20400%202%20414%2026%20C440%206%20494%2012%20504%2042%20C546%2036%20584%2062%20578%2096%20C598%20116%20588%20150%20552%20152%20C540%20170%20500%20172%20478%20160%20C454%20174%20404%20174%20384%20160%20C360%20174%20300%20176%20280%20160%20C254%20174%20200%20174%20182%20160%20C158%20174%20108%20172%2092%20158%20Z%22%2F%3E%3C%2Fsvg%3E") center / 100% 100% no-repeat; filter: drop-shadow(0 6px 0 rgba(11, 61, 107, .16)); font-weight: 800; line-height: 1.1; white-space: nowrap; color: #ffd84a; -webkit-text-stroke: 2px #0b3d6b; paint-order: stroke fill;
       font-size: min(8.4vh, 4.6rem, 9.5vw); text-shadow: 0 4px 0 rgba(11, 61, 107, .45), 0 0 18px rgba(11, 61, 107, .35); position: relative; }
-    #start .hello { position: absolute; top: 46%; right: 84%; background: var(--paper); color: var(--ink); font-weight: 800; white-space: nowrap;
+    #start .hello { position: absolute; top: 22%; right: 66%; background: var(--paper); color: var(--ink); font-weight: 800; white-space: nowrap;
       font-size: min(3vh, 1.6rem, 4.6vw); line-height: 1.3; padding: 0.8vh 18px; border-radius: var(--r-xl); box-shadow: var(--lift); }
     #start .hello::after { content: ""; position: absolute; right: 26px; bottom: -12px; border: 9px solid transparent;
       border-top: 13px solid var(--paper); border-bottom: 0; }
@@ -171,24 +171,23 @@
       animation: slideIn .9s cubic-bezier(.2, .9, .3, 1.2) .5s both; }
     #start .slide .bp { display: none; }
     #start .slide .lead { font-size: min(3.3vh, 1.7rem, 4.6vw); font-weight: 800; line-height: 1.45; color: var(--ink); margin: 0; }
-    #start .promise { position: absolute; z-index: 3; right: 1.5vw; top: calc(min(42vw, 540px) * .4 + 2vh); width: min(28vw, 340px); margin: 0;
-      background: #fff; color: #a04f00; border: 4px solid #ffe14d; border-radius: 18px; font-weight: 800; text-align: center;
-      font-size: min(2.2vh, 1.12rem, 3.6vw); padding: 1vh 14px; line-height: 1.45; animation: glowYellowBox 1.6s ease-in-out infinite; }
-    @keyframes glowYellowBox { 0%, 100% { box-shadow: 0 0 6px 2px rgba(255, 212, 0, .55); } 50% { box-shadow: 0 0 28px 10px rgba(255, 212, 0, 1); } }
+    #start .promise { position: absolute; z-index: 3; right: 1vw; top: calc(min(42vw, 540px) * .4 - 1vh); width: min(30vw, 370px); aspect-ratio: 400 / 260; margin: 0;
+      display: flex; align-items: center; justify-content: center; text-align: center; color: #a04f00; font-weight: 800;
+      font-size: min(2.3vh, 1.15rem, 3.6vw); line-height: 1.45; padding: min(5vh, 40px) min(4.4vw, 54px) min(4vh, 32px);
+      background: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20400%20260%22%20preserveAspectRatio%3D%22none%22%3E%3Cpath%20fill%3D%22%23fff%22%20stroke%3D%22%233fb5ff%22%20stroke-width%3D%227%22%20stroke-linejoin%3D%22round%22%20d%3D%22M74%20232%20C30%20232%2010%20200%2024%20170%20C6%20148%2014%20110%2048%20104%20C44%2064%2086%2040%20122%2054%20C138%2020%20190%2010%20222%2036%20C250%2014%20300%2022%20312%2058%20C352%2058%20380%2092%20368%20126%20C390%20150%20382%20194%20348%20204%20C342%20232%20310%20246%20280%20236%20C258%20258%20214%20260%20194%20240%20C170%20260%20124%20258%20106%20236%20Z%22%2F%3E%3C%2Fsvg%3E") center / 100% 100% no-repeat; animation: glowYellowBox 1.6s ease-in-out infinite; }
+    @keyframes glowYellowBox { 0%, 100% { filter: drop-shadow(0 0 3px rgba(255, 212, 0, .7)); } 50% { filter: drop-shadow(0 0 14px #ffd400) drop-shadow(0 0 8px #ffd400); } }
 
     /* more drops on clouds, as if they are already up in the sky */
     #start .friends { position: absolute; z-index: 1; pointer-events: none; animation: bob 3.6s ease-in-out infinite; }
-    #start .f1 { left: 2vw; top: 42vh; height: min(19vh, 175px); }
-    #start .f2 { right: 2vw; top: 42vh; height: min(19vh, 175px); animation-delay: -1.2s; }
-    #start .f3 { left: 13vw; top: 17vh; height: min(13vh, 120px); animation-delay: -2.1s; }
-    #start .f4 { display: none; }
-
-    /* the side doors: each button sits in its own small cloud at the top left */
-    #start .doors { position: absolute; z-index: 3; left: 1.5vw; top: 3vh; display: flex; gap: 22px; }
-    #start .door { padding: 12px 18px 10px; }
-    #start .door .b1 { left: 10%; top: -34%; width: 44%; height: 90%; }
-    #start .door .b2 { right: 8%; top: -22%; width: 36%; height: 72%; }
-    #start .door .mini { font-size: min(2.2vh, 1.1rem, 3.6vw); padding: 2px 6px; min-height: 44px; background: transparent; border: 0; box-shadow: none; }
+    #start .f2 { right: 3vw; top: 53vh; height: min(15vh, 130px); animation-delay: -1.2s; }
+    /* the stars board, shop and new player buttons are written on the clouds the drops stand on */
+    #start .fc { position: absolute; z-index: 3; left: 1vw; height: min(21vh, 180px); aspect-ratio: 900 / 750; pointer-events: none; animation: bob 3.6s ease-in-out infinite; }
+    #start .fc img { width: 100%; height: 100%; display: block; }
+    #start .fc.c1 { top: 1.5vh; }
+    #start .fc.c2 { top: calc(1.5vh + min(22vh, 190px)); animation-delay: -1.2s; }
+    #start .fc.c3 { top: calc(1.5vh + 2 * min(22vh, 190px)); animation-delay: -2.4s; }
+    #start .fc .mini { position: absolute; left: 50%; bottom: 14%; transform: translateX(-50%); pointer-events: auto; white-space: nowrap;
+      background: transparent; border: 0; box-shadow: none; color: var(--ink); font-weight: 800; font-size: min(2.7vh, 1.35rem, 3.6vw); min-height: 44px; padding: 2px 6px; }
 
     /* bottom: the three steps in one row with the yellow glowing numbers, then the start button */
     #start .bottom { position: absolute; z-index: 4; left: 0; right: 0; bottom: 0; height: var(--bottom);
@@ -228,26 +227,26 @@
     /* upright phone: the card stops sliding over Qattoura and sits under the title; the doors cloud stays on top */
     @media (max-aspect-ratio: 3/4) {
       #start { --bottom: min(30vh, 260px); --hh: min(38vh, 70vw); }
-      #start .center { top: 10vh; }
+      #start .center { top: 12vh; }
       #start .hello { left: auto; right: -14px; top: 4%; }
       #start .slide { left: 6vw; right: 6vw; width: auto; top: calc(10vh + var(--hh) + 3.5vh); padding: 1.2vh 16px; border-radius: 60px; }
       #start .f1 { left: -6vw; top: 26vh; height: 12vh; }
       #start .f2 { right: -4vw; top: 30vh; height: 10vh; }
       #start .f3, #start .f4 { display: none; }
-      #start .doors { left: 50%; transform: translateX(-50%); gap: 10px; top: 2.5vh; }
-      #start .door { padding: 8px 8px 6px; }
+      #start .fc { height: auto; width: 31vw; }
+      #start .fc.c1, #start .fc.c2, #start .fc.c3 { top: 0; }
+      #start .fc.c1 { right: 1vw; left: auto; } #start .fc.c2 { left: 34.5vw; } #start .fc.c3 { left: 1vw; }
+      #start .f2 { display: none; }
+      #start .fc .mini { font-size: 3.4vw; bottom: 8%; }
       #start .slide .t1, #start .slide .t2 { display: none; }
       #start .slide .b4, #start .slide .b5, #start .slide .b6, #start .slide .b7 { display: none; }
       #start .slide .b1 { width: 22%; top: -16%; } #start .slide .b2 { width: 28%; top: -24%; } #start .slide .b3 { width: 20%; top: -12%; }
       #start h1 { margin-top: -4vh; }
       #start .center { z-index: 3; } #start .slide { z-index: 2; }
-      #start .slide { min-height: 0; aspect-ratio: auto; top: calc(10vh + var(--hh) + 5vh); padding: 3.6vh 12vw 3vh; }
+      #start .slide { min-height: 0; aspect-ratio: auto; top: calc(12vh + var(--hh) + 5vh); padding: 3.6vh 12vw 3vh; }
       #start .promise { display: none; }
       #start .how span { margin-top: 1.5vh; }
       #start .how span .p1 { top: -24%; width: 22%; } #start .how span .p2 { top: -32%; width: 28%; } #start .how span .p3 { top: -22%; width: 20%; }
-      #start .door .mini { white-space: nowrap; font-size: min(1.8vh, 3.4vw); }
-      #start .door .bp { aspect-ratio: 1; height: auto; }
-      #start .door .b1 { width: 38%; top: -42%; } #start .door .b2 { width: 30%; top: -30%; }
       #start .how span { flex-direction: column; gap: 4px; padding: 8px 4px; text-align: center; }
     }
 
@@ -394,12 +393,9 @@
     <svg class="near r3" viewBox="0 0 150 48"><path d="M10 30 q10 -14 20 0 q10 -14 20 0"/><path d="M66 16 q9 -12 18 0 q9 -12 18 0"/><path d="M112 34 q8 -11 16 0 q8 -11 16 0"/></svg>
     <svg class="near l4" viewBox="0 0 150 48"><path d="M10 30 q10 -14 20 0 q10 -14 20 0"/><path d="M66 16 q9 -12 18 0 q9 -12 18 0"/><path d="M112 34 q8 -11 16 0 q8 -11 16 0"/></svg>
   </div>
-  <img class="friends f3" src="start-friends.webp" alt="">
-  <img class="friends f4" src="start-friends.webp" alt="">
-  <img class="friends f1" src="start-friends.webp" alt="صديقات قطّورة فوق غيمة">
   <img class="friends f2" src="start-friends.webp" alt="">
   <div class="center">
-    <img class="hero" src="start-hero-soft.webp" alt="قطّورة فرحة في غيمتها">
+    <img class="hero" src="start-hero-clean.webp" alt="قطّورة فرحة في غيمتها">
     <div class="hello">هيّا نصعد إلى الغيمة!</div>
     <h1>قطّورة تصعد إلى الغيمة</h1>
   </div>
@@ -408,11 +404,9 @@
     <p class="lead">ساعد قطّورة لتصعد إلى السماء، وتبرد، وتتحول إلى قطرة ماء.</p>
     </div>
   <p class="promise">🎁 بالقطع النقدية تشتري ملابس لقطّورة، وبلعبك الجيد تربح نجوماً في لوحة النجوم</p>
-  <div class="doors">
-    <div class="door puff"><i class="bp b1"></i><i class="bp b2"></i><button id="miniStars" class="mini" type="button">⭐ لوحة النجوم</button></div>
-    <div class="door puff"><i class="bp b1"></i><i class="bp b2"></i><button id="miniShop" class="mini" type="button" disabled>🛍️ المتجر</button></div>
-    <div class="door puff"><i class="bp b1"></i><i class="bp b2"></i><button id="miniReset" class="mini" type="button">👤 لاعب جديد</button></div>
-  </div>
+  <div class="fc c1"><img src="start-friends.webp" alt="صديقات قطّورة فوق غيمة"><button id="miniStars" class="mini" type="button">⭐ لوحة النجوم</button></div>
+  <div class="fc c2"><img src="start-friends.webp" alt=""><button id="miniShop" class="mini" type="button" disabled>🛍️ المتجر</button></div>
+  <div class="fc c3"><img src="start-friends.webp" alt=""><button id="miniReset" class="mini" type="button">👤 لاعب جديد</button></div>
   <div class="bottom">
     <div class="how">
       <span class="puff"><i class="bp p1"></i><i class="bp p2"></i><i class="bp p3"></i><i class="bp p4"></i><i class="bp p5"></i><b>١</b>👆 اسحب إصبعك يميناً ويساراً</span>
