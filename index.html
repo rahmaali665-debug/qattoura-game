@@ -164,15 +164,15 @@
     /* a cloud shape: a white body plus round puffs behind the text, all with one soft shadow */
     .puff { position: relative; z-index: 0; background: #fff; border-radius: 999px; filter: drop-shadow(0 6px 0 rgba(11, 61, 107, .16)); }
     .puff > .bp { position: absolute; z-index: -1; background: #fff; border-radius: 50%; }
-    /* the mission: a wide cloud that slides in over the empty cloud above her head */
-    #start .slide { position: absolute; z-index: 3; left: calc(50vw + var(--hh) * .04); top: .5vh; width: min(42vw, 540px); aspect-ratio: 900 / 360;
-      display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;
-      padding: min(5vh, 42px) min(6.5vw, 84px) min(2vh, 18px); background: url(start-cloud.webp) center / 100% 100% no-repeat;
+    /* the mission: the three drops stand on its cloud, beside her raised left hand; the text sits in the cloud */
+    #start .slide { position: absolute; z-index: 3; left: calc(50vw + var(--hh) * .33); top: 0; width: min(31vw, 370px); aspect-ratio: 900 / 750;
+      display: flex; flex-direction: column; align-items: center; justify-content: flex-end; text-align: center;
+      padding: 0 min(3.6vw, 44px) min(4.6vh, 38px); background: url(start-friends.webp) center / 100% 100% no-repeat;
       filter: drop-shadow(0 6px 10px rgba(11, 61, 107, .18));
       animation: slideIn .9s cubic-bezier(.2, .9, .3, 1.2) .5s both; }
     #start .slide .bp { display: none; }
-    #start .slide .lead { font-size: min(3.3vh, 1.7rem, 4.6vw); font-weight: 800; line-height: 1.45; color: var(--ink); margin: 0; }
-    #start .promise { position: absolute; z-index: 3; right: 1vw; top: calc(min(42vw, 540px) * .4 - 1vh); width: min(30vw, 370px); aspect-ratio: 400 / 260; margin: 0;
+    #start .slide .lead { font-size: min(2.9vh, 1.5rem, 4.6vw); font-weight: 800; line-height: 1.45; color: var(--ink); margin: 0; }
+    #start .promise { position: absolute; z-index: 3; right: 1vw; top: calc(min(31vw, 370px) * .833 - 2.5vh); width: min(26vw, 320px); aspect-ratio: 400 / 260; margin: 0;
       display: flex; align-items: center; justify-content: center; text-align: center; color: #a04f00; font-weight: 800;
       font-size: min(2.3vh, 1.15rem, 3.6vw); line-height: 1.45; padding: min(5vh, 40px) min(4.4vw, 54px) min(4vh, 32px);
       background: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20400%20260%22%20preserveAspectRatio%3D%22none%22%3E%3Cpath%20fill%3D%22%23fff%22%20stroke%3D%22%233fb5ff%22%20stroke-width%3D%227%22%20stroke-linejoin%3D%22round%22%20d%3D%22M74%20232%20C30%20232%2010%20200%2024%20170%20C6%20148%2014%20110%2048%20104%20C44%2064%2086%2040%20122%2054%20C138%2020%20190%2010%20222%2036%20C250%2014%20300%2022%20312%2058%20C352%2058%20380%2092%20368%20126%20C390%20150%20382%20194%20348%20204%20C342%20232%20310%20246%20280%20236%20C258%20258%20214%20260%20194%20240%20C170%20260%20124%20258%20106%20236%20Z%22%2F%3E%3C%2Fsvg%3E") center / 100% 100% no-repeat; animation: glowYellowBox 1.6s ease-in-out infinite; }
@@ -180,7 +180,6 @@
 
     /* more drops on clouds, as if they are already up in the sky */
     #start .friends { position: absolute; z-index: 1; pointer-events: none; animation: bob 3.6s ease-in-out infinite; }
-    #start .f2 { right: 3vw; top: 53vh; height: min(15vh, 130px); animation-delay: -1.2s; }
     /* the stars board, shop and new player buttons are written on the clouds the drops stand on */
     #start .fc { position: absolute; z-index: 3; left: 1vw; height: min(21vh, 180px); aspect-ratio: 900 / 750; pointer-events: none; animation: bob 3.6s ease-in-out infinite; }
     #start .fc img { width: 100%; height: 100%; display: block; }
@@ -245,7 +244,7 @@
       #start .slide .b1 { width: 22%; top: -16%; } #start .slide .b2 { width: 28%; top: -24%; } #start .slide .b3 { width: 20%; top: -12%; }
       #start h1 { margin-top: -4vh; }
       #start .center { z-index: 3; } #start .slide { z-index: 2; }
-      #start .slide { min-height: 0; aspect-ratio: auto; top: calc(12vh + var(--hh) + 5vh); padding: 3.6vh 12vw 3vh; }
+      #start .slide { min-height: 0; aspect-ratio: auto; top: calc(12vh + var(--hh) + 5vh); padding: 3.6vh 12vw 3vh; justify-content: center; background-image: url(start-cloud.webp); }
       #start .promise { display: none; }
       #start .how span { margin-top: 1.5vh; }
       #start .how span .p1 { top: -24%; width: 22%; } #start .how span .p2 { top: -32%; width: 28%; } #start .how span .p3 { top: -22%; width: 20%; }
@@ -395,7 +394,6 @@
     <svg class="near r3" viewBox="0 0 150 48"><path d="M10 30 q10 -14 20 0 q10 -14 20 0"/><path d="M66 16 q9 -12 18 0 q9 -12 18 0"/><path d="M112 34 q8 -11 16 0 q8 -11 16 0"/></svg>
     <svg class="near l4" viewBox="0 0 150 48"><path d="M10 30 q10 -14 20 0 q10 -14 20 0"/><path d="M66 16 q9 -12 18 0 q9 -12 18 0"/><path d="M112 34 q8 -11 16 0 q8 -11 16 0"/></svg>
   </div>
-  <img class="friends f2" src="start-friends.webp" alt="">
   <div class="center">
     <img class="hero" src="start-hero-clean.webp" alt="قطّورة فرحة في غيمتها">
     <div class="hello">هيّا نصعد<br>إلى الغيمة!</div>
