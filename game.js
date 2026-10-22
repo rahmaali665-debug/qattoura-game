@@ -64,6 +64,14 @@ const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(55, 1, 0.1, 100);
 const CAM_Y = 1.2, CAM_Z = 9.5;
 const SHOP_Y = -2.62, SHOP_Z = 5.9;           // close-up that keeps Qattoura in the upper part of the screen
+// on a wide screen the shop counter fills the right half and Qattoura stands big in the middle of the left half
+const SHOP_WIDE_Y = -1.15, SHOP_WIDE_Z = 3.7;
+function shopView() {
+  const wide = camera.aspect >= 1.25;
+  const z = wide ? SHOP_WIDE_Z : SHOP_Z;
+  const x = wide ? Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)) * z * camera.aspect * 0.5 : 0;
+  return { x, y: wide ? SHOP_WIDE_Y : SHOP_Y, z };
+}
 camera.position.set(0, CAM_Y, CAM_Z);
 scene.add(new THREE.HemisphereLight(0xffffff, 0x9fc8f0, 1.5));
 const sun = new THREE.DirectionalLight(0xfff2d0, 1.6);
@@ -287,6 +295,7 @@ function setPlayerOpacity(o) {
   playerMeshes.forEach((m) => { m.material.transparent = o < 0.999; m.material.opacity = o; m.material.depthWrite = true; });
   setWardrobeOpacity(o);
 }
+const smileParts = [];
 function dress() { if (model) { applyWorn(model, state.worn); } }
 
 const loader = new GLTFLoader();
@@ -296,6 +305,15 @@ Promise.all([load('models/qattoura.glb'), load('models/cloud.glb')]).then(([drop
   model.scale.setScalar(0.62);
   model.position.y = 0.75;
   model.traverse((n) => { if (n.isMesh) { n.material = n.material.clone(); playerMeshes.push(n); } });
+  // the mouth and tongue can open into a big laugh in the shop: move their pivot to the middle of the mouth
+  const mouth = playerMeshes.find((n) => n.material.name === 'mouth');
+  if (mouth) {
+    mouth.geometry.computeBoundingBox();
+    const mc = mouth.geometry.boundingBox.getCenter(new THREE.Vector3());
+    playerMeshes.filter((n) => n.material.name === 'mouth' || n.material.name === 'tongue').forEach((n) => {
+      n.geometry.translate(-mc.x, -mc.y, -mc.z); n.position.add(mc); smileParts.push(n);
+    });
+  }
   player.add(model);
   mixer = new THREE.AnimationMixer(model);
   drop.animations.forEach((c) => mixer.clipAction(c).play());
@@ -572,7 +590,7 @@ function openShop(from) {
   shopTab('goods');
   showPanel('shop');
   // show Qattoura in her shop pose at once, without waiting for the camera to glide there
-  camera.position.y = SHOP_Y; camera.position.z = SHOP_Z;
+  { const v = shopView(); camera.position.set(v.x, v.y, v.z); }
   player.position.x = 0; player.scale.setScalar(1); setPlayerOpacity(1);
   bigCloud.scale.setScalar(1); bigCloud.position.x = 0;
   dress();
@@ -661,13 +679,23 @@ function update(dt) {
 
   // the camera comes close in the shop, and goes back for the climb
   const ease = Math.min(1, dt * 5);
-  camera.position.y += ((shop ? SHOP_Y : CAM_Y) - camera.position.y) * ease;
-  camera.position.z += ((shop ? SHOP_Z : CAM_Z) - camera.position.z) * ease;
+  const view = shop ? shopView() : { x: 0, y: CAM_Y, z: CAM_Z };
+  camera.position.x += (view.x - camera.position.x) * ease;
+  camera.position.y += (view.y - camera.position.y) * ease;
+  camera.position.z += (view.z - camera.position.z) * ease;
 
   // Qattoura follows the finger; in the shop she turns from side to side to show what she wears
   player.position.x += (S.targetX - player.position.x) * Math.min(1, dt * 9);
   player.rotation.z = (player.position.x - S.targetX) * 0.12;
   player.rotation.y += ((shop ? Math.sin(S.time * 0.9) * 0.75 : 0) - player.rotation.y) * Math.min(1, dt * 6);
+  // in the shop she is happy with what she achieved: she hops and wiggles
+  const hop = shop ? Math.abs(Math.sin(S.time * 3.2)) * 0.32 : 0;
+  player.position.y += (-1.9 + hop - player.position.y) * Math.min(1, dt * 12);
+  if (shop) { player.rotation.z = Math.sin(S.time * 6.4) * 0.09; }
+  // a big laugh and faster arm waving while she is happy in the shop
+  S.smile = (S.smile || 0) + ((shop ? 1 : 0) - (S.smile || 0)) * Math.min(1, dt * 5);
+  smileParts.forEach((n) => n.scale.set(1 + 0.3 * S.smile, 1 + 0.9 * S.smile, 1 + 0.25 * S.smile));
+  if (mixer) { mixer.timeScale = shop ? 2 : 1; }
 
   // she starts small and grows with every item she collects and every station she passes, until the cloud forms
   const st0 = STATIONS[Math.min(S.station, 2)];
