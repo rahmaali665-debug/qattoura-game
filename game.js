@@ -478,7 +478,8 @@ function finishRun() {
   state.stars.push(...fresh);
   saveState(state);
   $('final').innerHTML = 'قطعك في هذه الرحلة: ' + ar(S.score) + ' <i class="coin"></i>';
-  $('badges').textContent = 'بطاقاتك الذهبية: ' + S.badges.map((b) => b.icon).join(' ');
+  // the golden cards she won, drawn as small gold cards on top of the stars board
+  $('badges').innerHTML = S.badges.map((b) => '<span class="goldmini"><i>' + b.icon + '</i><small>' + b.name.replace('بطاقة ', '').replace(' الذهبية', '') + '</small></span>').join('');
   $('endStarsTitle').textContent = fresh.length
     ? 'ربحتَ ' + (fresh.length === 1 ? 'نجمة جديدة!' : fresh.length === 2 ? 'نجمتين جديدتين!' : ar(fresh.length) + ' نجوم جديدة!')
     : 'لوحة النجوم: ' + starCount();
