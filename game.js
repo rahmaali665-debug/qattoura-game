@@ -614,6 +614,13 @@ function openBye() {
 }
 $('byeBtn').addEventListener('click', openBye);
 $('byeBtn2').addEventListener('click', openBye);
+// back to the start screen, or leave the game: a browser tab opened from a link cannot always close itself, so a goodbye note covers the screen
+$('byeBack').addEventListener('click', () => { S.mode = 'start'; showPanel('start'); });
+$('byeExit').addEventListener('click', () => {
+  S.mode = 'gone';
+  try { window.close(); } catch (e) { /* the page stays open; the note below tells the pupil it is over */ }
+  $('byeGone').hidden = false;
+});
 $('miniShop').addEventListener('click', () => openShop('start'));
 $('shopBack').addEventListener('click', () => { S.mode = 'start'; showPanel('start'); });
 $('tabGoods').addEventListener('click', () => shopTab('goods'));
